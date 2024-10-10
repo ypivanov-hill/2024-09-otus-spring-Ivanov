@@ -1,13 +1,10 @@
-package ru.otus.hwtest;
+package ru.otus.hw.service;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.otus.hw.dao.QuestionDao;
-import ru.otus.hw.service.IOService;
-import ru.otus.hw.service.TestService;
-import ru.otus.hw.service.TestServiceImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -38,11 +35,11 @@ public class TestServiceSimpleTest {
         System.out.println("Execute testServiceIsExecute " + this.hashCode());
         assertThat(testService).isNotNull();
         testService.executeTest();
+        verify(question, times(1)).findAll();
     }
 
     @AfterEach
     public void afterEach(){
         System.out.println("Execute afterEach ");
-        verify(question, times(1)).findAll();
     }
 }

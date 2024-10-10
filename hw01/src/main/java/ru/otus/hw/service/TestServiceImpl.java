@@ -2,6 +2,7 @@ package ru.otus.hw.service;
 
 import lombok.RequiredArgsConstructor;
 import ru.otus.hw.dao.QuestionDao;
+import ru.otus.hw.domain.Answer;
 import ru.otus.hw.domain.Question;
 
 import java.util.List;
@@ -15,17 +16,35 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public void executeTest() {
-        ioService.printLine("");
-        ioService.printFormattedLine("Please answer the questions below%n");
+        printTestHeader();
         // Получить вопросы из дао и вывести их с вариантами ответов
-        List<Question> questionList  = question.findAll();
+        List<Question> questionList = question.findAll();
         questionList.forEach(question -> {
-            ioService.printFormattedLine(question.text() + "%n");
+            printQuestion(question);
+        });
+           /* ioService.printFormattedLine(question.text() + "%n");
             question.answers()
                     .forEach(answer -> {
                         ioService.printFormattedLine("%x. " + answer.text(), question.answers().indexOf(answer));
                     });
             ioService.printLine("");
-        });
+        });*/
+    }
+
+    private void printTestHeader() {
+        ioService.printLine("");
+        ioService.printFormattedLine("Please answer the questions below%n");
+    }
+
+    private void printQuestion(Question question) {
+        ioService.printFormattedLine(question.text() + "%n");
+        printAnswers(question.answers());
+    }
+
+    private void printAnswers(List<Answer> answers) {
+        for (int i = 0; i < answers.size(); i++) {
+            ioService.printFormattedLine("%x. " + answers.get(i).text(), i);
+        }
+        ioService.printLine("");
     }
 }

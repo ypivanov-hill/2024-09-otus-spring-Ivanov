@@ -40,7 +40,7 @@ public class CsvQuestionDao implements QuestionDao {
             // Использовать QuestionReadException
             // Про ресурсы: https://mkyong.com/java/java-read-a-file-from-resources-folder/
         } catch (IOException e) {
-            throw new QuestionReadException("file not found! " + fileNameProvider.getTestFileName());
+            throw new QuestionReadException("file not found! " + fileNameProvider.getTestFileName(), e);
         }
         return questionList;
     }
