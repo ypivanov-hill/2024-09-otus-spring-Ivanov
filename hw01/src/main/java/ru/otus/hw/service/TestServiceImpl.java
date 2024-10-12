@@ -22,14 +22,7 @@ public class TestServiceImpl implements TestService {
         questionList.forEach(question -> {
             printQuestion(question);
         });
-           /* ioService.printFormattedLine(question.text() + "%n");
-            question.answers()
-                    .forEach(answer -> {
-                        ioService.printFormattedLine("%x. " + answer.text(), question.answers().indexOf(answer));
-                    });
-            ioService.printLine("");
-        });*/
-    }
+     }
 
     private void printTestHeader() {
         ioService.printLine("");

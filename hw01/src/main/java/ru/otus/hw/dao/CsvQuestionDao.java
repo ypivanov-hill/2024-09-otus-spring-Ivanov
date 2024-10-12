@@ -28,7 +28,7 @@ public class CsvQuestionDao implements QuestionDao {
         // https://opencsv.sourceforge.net/#collection_based_bean_fields_one_to_many_mappings
         List<Question> questionList;
         try (Reader reader = getFileFromResource()) {
-            CsvToBean csvToBean = new CsvToBeanBuilder<QuestionDto>(reader)
+            CsvToBean<QuestionDto> csvToBean = new CsvToBeanBuilder<QuestionDto>(reader)
                     .withSkipLines(1)
                     .withSeparator(';')
                     .withType(QuestionDto.class)
