@@ -53,7 +53,7 @@ public class TestServiceImpl implements TestService {
         ioService.printLine("");
     }
 
-    private Boolean readAnswerAndCheckIt(List<Answer> answers) {
+    private boolean readAnswerAndCheckIt(List<Answer> answers) {
         int maxAnswerNum = answers.size() - 1;
         int answerNumber = ioService.readIntForRangeWithPrompt(0, maxAnswerNum, INVITATION_TEXT, ERROR_TEXT);
         return answers.get(answerNumber).isCorrect();

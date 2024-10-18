@@ -35,7 +35,6 @@ public class CsvQuestionDaoTest {
         assertThat(questionDao).isNotNull();
         List<Question> questionList = questionDao.findAll();
         assertThat(questionList).hasSize(2);
-        assertThat(questionList).first().isInstanceOf(Question.class);
         assertThat(questionList)
                 .filteredOn(question -> question.text().contains("QUESTION1"))
                 .hasSize(1);
