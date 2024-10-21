@@ -1,0 +1,8 @@
+# Добавить сюда своих вопросов. Эту строку надо пропустить при настройке CsvToBean (withSkipLines)
+Is there life on Mars?;Science doesn't know this yet%true|Certainly. The red UFO is from Mars. And green is from Venus%false|Absolutely not%false
+How should resources be loaded form jar in Java?;ClassLoader#geResourceAsStream or ClassPathResource#getInputStream%true|ClassLoader#geResource#getFile + FileReader%false|Wingardium Leviosa%false
+Which option is a good way to handle the exception?;@SneakyThrow%false|e.printStackTrace()%false|Rethrow with wrapping in business exception (for example, QuestionReadException)%true|Ignoring exception%false
+What is a correct syntax to output "Hello World" in Java?;System.out.println("Hello World")%true|Console.WriteLine("Hello World")%false|echo("Hello World")%false|print ("Hello World")%false
+Which data type is used to create a variable that should store text?;String%true|string%false|myString%false|Txt%false
+How do you insert COMMENTS in Java code?;// This is a comment%true|# This is a comment%false|/* This is a comment%false
+Which operator is used to add together two values?;The + sign%true|The & sign%false|The * sign%false
