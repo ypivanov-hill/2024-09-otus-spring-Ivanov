@@ -18,6 +18,8 @@ public class TestServiceImpl implements TestService {
 
     private static final String ERROR_CODE = "TestService.enter.answer.wrong";
 
+    private static final String START_TEST_CODE = "TestService.answer.the.questions";
+
     private final LocalizedIOService ioService;
 
     private final QuestionDao questionDao;
@@ -38,7 +40,7 @@ public class TestServiceImpl implements TestService {
 
     private void printTestHeader() {
         ioService.printLine("");
-        ioService.printLineLocalized("TestService.answer.the.questions");
+        ioService.printLineLocalized(START_TEST_CODE);
         ioService.printLine("");
     }
 
