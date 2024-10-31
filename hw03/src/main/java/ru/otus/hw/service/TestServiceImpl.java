@@ -32,7 +32,7 @@ public class TestServiceImpl implements TestService {
 
         for (var question : questions) {
             printQuestion(question);
-            var isAnswerValid = readAnswerAndCheckIt(question.answers()); // Задать вопрос, получить ответ
+            var isAnswerValid = readAnswerAndCheckIt(question.answers());
             testResult.applyAnswer(question, isAnswerValid);
         }
         return testResult;
