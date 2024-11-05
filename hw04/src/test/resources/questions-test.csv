@@ -1,0 +1,3 @@
+# Добавить сюда своих вопросов. Эту строку надо пропустить при настройке CsvToBean (withSkipLines)
+QUESTION1?;Answer1%true|Answer2%false|Answer3%false
+QUESTION2?;Answer1%true|Answer2%false|Answer3%false
