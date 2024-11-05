@@ -1,0 +1,9 @@
+${AnsiColor.1}${AnsiBackground.233} ______  __                     ___       __            ______ ________
+${AnsiBackground.235}___  / / /____________ __________ |     / /_______________  /___|__  /
+${AnsiBackground.237}__  /_/ /_  __ \_  __ `__ \  _ \_ | /| / /_  __ \_  ___/_  //_/__/_ <
+${AnsiBackground.239}_  __  / / /_/ /  / / / / /  __/_ |/ |/ / / /_/ /  /   _  ,<  ____/ /
+${AnsiBackground.241}/_/ /_/  \____//_/ /_/ /_/\___/____/|__/  \____//_/    /_/|_| /____/
+${AnsiBackground.DEFAULT}${AnsiColor.DEFAULT}
+
+${application.title} ${application.version}
+Powered by Spring Boot ${spring-boot.version}
