@@ -1,0 +1,8 @@
+# Добавить сюда своих вопросов. Эту строку надо пропустить при настройке CsvToBean (withSkipLines)
+Есть ли жизнь на Марсе?;Это науке пока не известно%true|Конечно. Красные (НЛО) это с Марса. А зеленые (НЛО) с Венеры%false|Точно нет%false
+Как нужно загружать ресурс из jar в Java?;ClassLoader#geResourceAsStream или ClassPathResource#getInputStream%true|ClassLoader#geResource#getFile + FileReader%false|Wingardium Leviosa%false
+Какой предпочтительный способ реакции на исключения?;@SneakyThrow%false|e.printStackTrace()%false|Проброс дальше с предварительным оборачиванием в бизнес-исключение (например, QuestionReadException)%true|Игнорирование исключения%false
+Какой вариант синтаксиса верен, для вывода "Hello World" в Java?;System.out.println("Hello World")%true|Console.WriteLine("Hello World")%false|echo("Hello World")%false|print ("Hello World")%false
+Какой тип данных используется для переменной где лежит текст?;String%true|string%false|myString%false|Txt%false
+Как вы закомментируйте строку в Java коде?;// This is a comment%true|# This is a comment%false|/* This is a comment%false
+Какой оператор нужно использовать, чтобы объединить два значения?;The + sign%true|The & sign%false|The * sign%false
