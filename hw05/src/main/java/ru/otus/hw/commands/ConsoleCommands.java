@@ -8,19 +8,17 @@ import org.h2.tools.Console;
 
 import java.sql.SQLException;
 
-
 @RequiredArgsConstructor
 @ShellComponent
 public class ConsoleCommands {
 
     @ShellMethod(value = "Run console", key = "c")
-    public String runConsole()  {
+    public void runConsole()  {
         try {
             String[] args = new String[0];
             Console.main(args);
         } catch (SQLException e) {
-            return "Error: " + e.getMessage();
+            System.out.println("Error: " + e.getMessage());
         }
-        return "Ok";
     }
 }

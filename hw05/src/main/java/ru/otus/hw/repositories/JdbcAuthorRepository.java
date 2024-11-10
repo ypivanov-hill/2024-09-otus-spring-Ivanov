@@ -1,20 +1,23 @@
 package ru.otus.hw.repositories;
 
 import lombok.AllArgsConstructor;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.models.Author;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
 @AllArgsConstructor
 public class JdbcAuthorRepository implements AuthorRepository {
-    private final JdbcOperations jdbc;
+
+    private final NamedParameterJdbcOperations jdbc;
+
     @Override
     public List<Author> findAll() {
         return jdbc.query("select a.id, a.full_name from authors a", new AuthorRowMapper());
@@ -22,7 +25,8 @@ public class JdbcAuthorRepository implements AuthorRepository {
 
     @Override
     public Optional<Author> findById(long id) {
-        return Optional.ofNullable(jdbc.queryForObject("select a from authors where id = :Id", new AuthorRowMapper(), id));
+        String sql = "select a.id, a.full_name from authors a where a.id = :id";
+        return Optional.ofNullable(jdbc.queryForObject(sql, Map.of("id",id), new AuthorRowMapper()));
     }
 
     private static class AuthorRowMapper implements RowMapper<Author> {

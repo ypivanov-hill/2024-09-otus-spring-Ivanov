@@ -22,4 +22,11 @@ public class AuthorCommands {
                 .map(authorConverter::authorToString)
                 .collect(Collectors.joining("," + System.lineSeparator()));
     }
+
+    @ShellMethod(value = "Find author by ID", key = "aaid")
+    public String findAuthorById(Long id) {
+        return authorService.findById(id).stream()
+                .map(authorConverter::authorToString)
+                .collect(Collectors.joining("," + System.lineSeparator()));
+    }
 }

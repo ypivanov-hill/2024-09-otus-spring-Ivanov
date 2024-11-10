@@ -12,12 +12,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Book {
+
     @Id
     private long id;
 
     private String title;
 
     private Author author;
+
     @MappedCollection(idColumn = "info_main_id")
     private List<Genre> genres;
 }
