@@ -1,6 +1,5 @@
 package ru.otus.hw.repositories;
 
-import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -11,7 +10,6 @@ import ru.otus.hw.models.Comment;
 import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.data.jpa.repository.EntityGraph.EntityGraphType.FETCH;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,6 +18,8 @@ public class JpaCommentRepository implements CommentRepository {
     @PersistenceContext
     private final EntityManager em;
 
+    private final BookRepository bookRepository;
+
     @Override
     public Optional<Comment> findById(long id) {
         return Optional.ofNullable(em.find(Comment.class, id));
@@ -27,9 +27,8 @@ public class JpaCommentRepository implements CommentRepository {
 
     @Override
     public List<Comment> findByBookId(long bookId) {
-        EntityGraph<?> entityGraph = em.getEntityGraph("comments-books-entity-graph");
+        bookRepository.findById(bookId);
         TypedQuery<Comment> query = em.createQuery("select c from Comment c where c.book.id = :bookId", Comment.class);
-        query.setHint(FETCH.getKey(), entityGraph);
         query.setParameter("bookId", bookId);
         return query.getResultList();
     }

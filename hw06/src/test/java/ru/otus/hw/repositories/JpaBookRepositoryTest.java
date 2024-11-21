@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Репозиторий на основе Jdbc для работы с книгами ")
 @DataJpaTest
 @Import({JpaBookRepository.class, JpaGenreRepository.class})
-//@Transactional(propagation = Propagation.REQUIRED)
 class JpaBookRepositoryTest {
 
     private static final int BOOK_COUNT = 3;
@@ -40,7 +39,7 @@ class JpaBookRepositoryTest {
     @DisplayName("должен загружать книгу по id")
     @Test
     void shouldReturnCorrectBookById() {
-        var expectedBook =em.find(Book.class, BOOK_TWO_ID);
+        var expectedBook = em.find(Book.class, BOOK_TWO_ID);
         var actualBook = repositoryJpa.findById(BOOK_TWO_ID);
         assertThat(actualBook).isPresent()
                 .get()
@@ -69,9 +68,8 @@ class JpaBookRepositoryTest {
                 .matches(book -> book.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        assertThat(repositoryJpa.findById(returnedBook.getId()))
-                .isPresent()
-                .get()
+        assertThat(em.find(Book.class, returnedBook.getId()))
+                .isNotNull()
                 .isEqualTo(returnedBook);
     }
 
@@ -84,9 +82,8 @@ class JpaBookRepositoryTest {
         em.detach(expectedBook);
         expectedBook.setTitle("BookTitle_2_NEW");
 
-        assertThat(repositoryJpa.findById(BOOK_TWO_ID))
-                .isPresent()
-                .get()
+        assertThat(em.find(Book.class,BOOK_TWO_ID))
+                .isNotNull()
                 .isNotEqualTo(expectedBook);
 
         var returnedBook = repositoryJpa.save(expectedBook);
@@ -97,9 +94,8 @@ class JpaBookRepositoryTest {
                 .ignoringExpectedNullFields()
                 .isEqualTo(expectedBook);
 
-        assertThat(repositoryJpa.findById(returnedBook.getId()))
-                .isPresent()
-                .get()
+        assertThat(em.find(Book.class, returnedBook.getId()))
+                .isNotNull()
                 .isEqualTo(returnedBook);
     }
 

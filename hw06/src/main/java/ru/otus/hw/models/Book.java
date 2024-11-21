@@ -30,8 +30,8 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "books")
-@NamedEntityGraph(name = "books-author-comments-entity-graph",
-        attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("comments")})
+@NamedEntityGraph(name = "books-author-entity-graph",
+        attributeNodes = {@NamedAttributeNode("author")})
 public class Book {
 
     @Id

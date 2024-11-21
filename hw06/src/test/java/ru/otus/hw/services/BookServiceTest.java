@@ -155,7 +155,7 @@ class BookServiceTest {
                 .anyMatch(genre -> genre.getId() == FOURTH_GENRE_ID);
     }
 
-    @DisplayName("должен отображать комментарии")
+    @DisplayName("не должен отображать комментарии")
     @Test
     void shouldFindCommentsInBook() {
         Optional<BookDto> returnedBook = bookService.findById(SECOND_BOOK_ID);
@@ -164,7 +164,6 @@ class BookServiceTest {
 
         assertThat(returnedBook.get().getComments())
                 .isNotNull()
-                .hasSize(2)
-                .allMatch(genre -> SECOND_COMMENT_TEXT.equals(genre.getText()) || FOURTH_COMMENT_TEXT.equals(genre.getText()));
+                .hasSize(0);
     }
 }
