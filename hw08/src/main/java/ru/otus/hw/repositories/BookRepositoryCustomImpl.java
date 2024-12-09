@@ -27,8 +27,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     @Override
     public List<BasicDBObject> getBookCountByGenre() {
         Aggregation aggregation = newAggregation(
-
-                 unwind("genres")
+                unwind("genres")
                 , group("genres.name").count().as("count")
                 , sort(Sort.by(Sort.Direction.ASC, "_id"))
         );
@@ -40,15 +39,15 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     @Override
     public void deleteBookByTitle(String title) {
         Query query = Query.query(Criteria.where("title").is(title));
-        Book book = mongoTemplate.findOne(query,Book.class);
+        Book book = mongoTemplate.findOne(query, Book.class);
         deleteBookById(book.getId());
     }
 
     @Override
     public void deleteBookById(String id) {
-       List<Comment> comments = commentRepository.findByBookId(id);
-       comments.forEach(comment -> commentRepository.deleteById(comment.getId()));
-       Query query = Query.query(Criteria.where("id").is(id));
-       mongoTemplate.findAndRemove(query,Book.class);
+        Query queryComment = Query.query(Criteria.where("book._id").is(id));
+        mongoTemplate.remove(queryComment, Comment.class);
+        Query queryBook = Query.query(Criteria.where("id").is(id));
+        mongoTemplate.remove(queryBook, Book.class);
     }
 }

@@ -173,6 +173,7 @@ class BookServiceTest {
 
         assertThat(expectedBook.getGenres()).isNotEmpty().first().isNotNull();
 
+        int expectedGenresCount = expectedBook.getGenres().size();
         String expectedGenreId = expectedBook.getGenres().get(0).getId();
 
         Optional<BookDto> returnedBook = bookService.findByTitleIgnoreCase(FIRST_BOOK_NAME);
@@ -181,7 +182,7 @@ class BookServiceTest {
 
         assertThat(returnedBook.get().getGenres())
                 .isNotNull()
-                .hasSize(2)
+                .hasSize(expectedGenresCount)
                 .anyMatch(genre -> genre.getId().equals(expectedGenreId));
     }
 

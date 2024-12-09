@@ -73,8 +73,7 @@ public class BookServiceImpl implements BookService {
             throw new IllegalArgumentException("Genres ids must not be null");
         }
 
-        var author = authorRepository.findByFullName(authorFullName)
-                .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found".formatted(authorFullName)));
+        var author = authorRepository.findOneByFullName(authorFullName);
         var genres = genreRepository.findAllByNameIn(genreNames);
         if (isEmpty(genres) || genreNames.size() != genres.size()) {
             throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genreNames));

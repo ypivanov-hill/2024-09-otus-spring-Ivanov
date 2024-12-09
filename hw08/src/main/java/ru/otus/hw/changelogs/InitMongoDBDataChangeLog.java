@@ -2,6 +2,7 @@ package ru.otus.hw.changelogs;
 
 import com.github.cloudyrock.mongock.ChangeLog;
 import com.github.cloudyrock.mongock.ChangeSet;
+import com.github.cloudyrock.mongock.driver.mongodb.springdata.v3.decorator.impl.MongockTemplate;
 import com.mongodb.client.MongoDatabase;
 import lombok.extern.slf4j.Slf4j;
 import ru.otus.hw.models.Author;
@@ -24,7 +25,7 @@ import java.util.stream.IntStream;
 @Slf4j
 public class InitMongoDBDataChangeLog {
 
-    private static final int AUTHOR_CNT = 41;
+    private static final int AUTHOR_CNT = 4;
 
     private static final int BOOK_CNT = 4;
 
@@ -42,15 +43,18 @@ public class InitMongoDBDataChangeLog {
 
     @ChangeSet(order = "001", id = "initAuthors", author = "ypi", runAlways = true)
     public void initAuthors(AuthorRepository repository) {
-
-        IntStream.range(1, AUTHOR_CNT)
-                .forEach(i -> repository.save(new Author("Author_" + i)));
+        List<Author> authors = IntStream.range(1, AUTHOR_CNT)
+                 .mapToObj(i -> new Author("Author_" + i))
+                 .collect(Collectors.toList());
+        repository.saveAll(authors);
     }
 
     @ChangeSet(order = "002", id = "initGenres", author = "ypi", runAlways = true)
     public void initGenres(GenreRepository repository) {
-        IntStream.range(1, GENRE_CNT)
-                .forEach(i -> repository.save(new Genre("Genre_" + i)));
+        List<Genre> genres = IntStream.range(1, GENRE_CNT)
+                .mapToObj(i -> new Genre("Genre_" + i))
+                .collect(Collectors.toList());
+        repository.saveAll(genres);
     }
 
     @ChangeSet(order = "003", id = "initBooks", author = "ypi", runAlways = true)
@@ -59,8 +63,8 @@ public class InitMongoDBDataChangeLog {
                           GenreRepository genreRepository) {
         List<Author> authors = authorRepository.findAll();
         List<Genre> allGenres = genreRepository.findAll();
-        IntStream.range(1, BOOK_CNT)
-                .forEach(bookIndex -> {
+        List<Book> allBooks = IntStream.range(1, BOOK_CNT)
+                .mapToObj(bookIndex -> {
                     int authorIndex = random.nextInt(AUTHOR_CNT - 2);
                     log.debug("Book {}, Author = Author_{}",bookIndex, authorIndex);
                     Author author = authors.get(authorIndex);
@@ -69,25 +73,28 @@ public class InitMongoDBDataChangeLog {
                             .mapToObj(allGenres::get)
                             .collect(Collectors.toList());
 
-                    bookRepository.save(new Book("BookTitle_" + bookIndex, author, genres));
-                });
+                    return new Book("BookTitle_" + bookIndex, author, genres);
+                }).collect(Collectors.toList());
+        bookRepository.saveAll(allBooks);
     }
 
     @ChangeSet(order = "004", id = "initComments", author = "ypi", runAlways = true)
-    public void initComments(CommentRepository commentRepository, BookRepository bookRepository) {
-        List<Book> books = bookRepository.findAll();
+    public void initComments(CommentRepository commentRepository,
+                             BookRepository bookRepository,
+                             MongockTemplate mongoTemplate) {
+        //List<Book> books = bookRepository.findAll();
+        List<Book> books = mongoTemplate.findAll(Book.class);
         log.debug("Book {}",books.size());
+        List<Comment> comments = new java.util.ArrayList<>();
         AtomicInteger index = new AtomicInteger(1);
-        books.forEach(book -> {
+
+        for (Book book : books) {
             log.debug("Book {} comment index {}",book.getId(), index);
-            commentRepository.save(new Comment("BookComment_" + index.getAndIncrement(), book));
-            commentRepository.save(new Comment("BookComment_" + index.getAndIncrement(), book));
-            /*List<Comment> comments = new java.util.ArrayList<>();
-            IntStream.range(1, COMMENT_CNT)
-                    .forEach(i -> comments.add(new Comment("BookComment_" + index.getAndIncrement(), book)));
-            commentRepository.saveAll(comments);*/
-        });
-
-
+            comments.addAll(IntStream.range(1, COMMENT_CNT)
+                    .mapToObj(i -> new Comment("BookComment_" + index.getAndIncrement(), book))
+                    .toList());
+        }
+        mongoTemplate.insertAll(comments);
+        //commentRepository.saveAll(comments);
     }
 }
