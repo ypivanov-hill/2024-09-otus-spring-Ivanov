@@ -1,5 +1,6 @@
 package ru.otus.hw.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -51,11 +52,17 @@ public class BookController {
     }
     @PostMapping("/edit/{id}")
     public String updateBook(@PathVariable String id,
-                             @RequestBody String text/*@Validated @ModelAttribute("book") BookDto book,
-                             BindingResult bindingResult,
-                             @RequestBody @Validated @ModelAttribute("author") AuthorDto author,
-                             @RequestBody @Validated @ModelAttribute("genres")  List<GenreDto> genres*/) {
-        log.info("text {}", text);
+                             @RequestBody String text,
+                             @Valid @ModelAttribute("book") BookDto bookDto,
+                             //@Valid @ModelAttribute("GenreDto") List<GenreDto> GenreDto,
+                             BindingResult bindingResult/*,
+                             @RequestParam(value = "GenreDto", defaultValue = "")  List<GenreDto> genreIds*/
+    ) {
+        log.info("Book id {}", id);
+        log.info("Book bookDto {}", text);
+       // log.info("authorId {}", bookDto.getAuthor().getId());
+       // log.info("genreIds {}", genreIds.toString());
+       // log.info("genreIds size {}", genreIds.size());
         //var savedBook = bookService.update(book);
         return "redirect:/";
     }
