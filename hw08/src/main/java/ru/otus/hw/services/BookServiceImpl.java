@@ -84,9 +84,9 @@ public class BookServiceImpl implements BookService {
     }
 
     public List<BookCountByGenreDto> getBookCountByGenre() {
-        return bookRepository.getBookCountByGenre()
+        return bookRepository.getBookCountByGenre().entrySet()
                 .stream()
-                .map(e -> new BookCountByGenreDto(e.getString("_id"), e.getLong("count")))
+                .map(e -> new BookCountByGenreDto(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
     }
 }

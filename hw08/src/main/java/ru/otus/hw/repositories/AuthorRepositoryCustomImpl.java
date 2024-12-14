@@ -1,7 +1,7 @@
 package ru.otus.hw.repositories;
 
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -11,17 +11,24 @@ import ru.otus.hw.models.Book;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 public class AuthorRepositoryCustomImpl implements AuthorRepositoryCustom {
 
     private final MongoTemplate mongoTemplate;
 
+    private final BookRepository bookRepository;
+
     @Override
     public void deleteByFullName(String fullName) {
-        Author author = findOneByFullName(fullName);
-        mongoTemplate.remove(author);
-        Query bookQuery = Query.query(Criteria.where("author._id").is(new ObjectId(author.getId())));
-        mongoTemplate.remove(bookQuery, Book.class);
+        Query authtorQuery = Query.query(Criteria.where("fullName").is(fullName));
+        mongoTemplate.remove(authtorQuery, Author.class);
+
+        Query bookQuery = Query.query(Criteria.where("author.fullName").is(fullName));
+        List<String> bookIds = mongoTemplate.find(bookQuery, Book.class).stream().map(Book::getId).toList();
+        for (String bookId : bookIds) {
+            bookRepository.deleteBookById(bookId);
+        }
     }
 
     @Override

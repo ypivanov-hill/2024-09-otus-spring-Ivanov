@@ -10,7 +10,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
@@ -22,17 +23,20 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     private final MongoTemplate mongoTemplate;
 
-    private final CommentRepository commentRepository;
-
     @Override
-    public List<BasicDBObject> getBookCountByGenre() {
+    public Map<String, Long> getBookCountByGenre() {
+        Map<String, Long> resultMap = new HashMap<>();
+
         Aggregation aggregation = newAggregation(
                 unwind("genres")
                 , group("genres.name").count().as("count")
                 , sort(Sort.by(Sort.Direction.ASC, "_id"))
         );
+        mongoTemplate.aggregate(aggregation,Book.class, BasicDBObject.class)
+                .getMappedResults()
+                .forEach(row -> resultMap.put(row.getString("_id"), row.getLong("count")));
 
-        return mongoTemplate.aggregate(aggregation, Book.class, BasicDBObject.class).getMappedResults();
+        return resultMap;
 
     }
 

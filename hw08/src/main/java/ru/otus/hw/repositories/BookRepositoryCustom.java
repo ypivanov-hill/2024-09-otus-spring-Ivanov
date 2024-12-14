@@ -1,12 +1,10 @@
 package ru.otus.hw.repositories;
 
-import com.mongodb.BasicDBObject;
-
-import java.util.List;
+import java.util.Map;
 
 public interface BookRepositoryCustom {
 
-    List<BasicDBObject> getBookCountByGenre();
+    Map<String, Long> getBookCountByGenre();
 
     void deleteBookByTitle(String title);
 
