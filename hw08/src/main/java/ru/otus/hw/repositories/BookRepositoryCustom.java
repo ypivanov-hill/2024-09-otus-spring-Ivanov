@@ -1,10 +1,12 @@
 package ru.otus.hw.repositories;
 
-import java.util.Map;
+import ru.otus.hw.dto.BookCountByGenreDto;
+
+import java.util.List;
 
 public interface BookRepositoryCustom {
 
-    Map<String, Long> getBookCountByGenre();
+    List<BookCountByGenreDto> getBookCountByGenre();
 
     void deleteBookByTitle(String title);
 

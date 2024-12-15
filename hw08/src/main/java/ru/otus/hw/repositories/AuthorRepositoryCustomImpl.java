@@ -2,12 +2,14 @@ package ru.otus.hw.repositories;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
+import ru.otus.hw.models.Comment;
 
 import java.util.List;
 
@@ -17,18 +19,18 @@ public class AuthorRepositoryCustomImpl implements AuthorRepositoryCustom {
 
     private final MongoTemplate mongoTemplate;
 
-    private final BookRepository bookRepository;
 
     @Override
     public void deleteByFullName(String fullName) {
         Query authtorQuery = Query.query(Criteria.where("fullName").is(fullName));
         mongoTemplate.remove(authtorQuery, Author.class);
-
         Query bookQuery = Query.query(Criteria.where("author.fullName").is(fullName));
-        List<String> bookIds = mongoTemplate.find(bookQuery, Book.class).stream().map(Book::getId).toList();
-        for (String bookId : bookIds) {
-            bookRepository.deleteBookById(bookId);
-        }
+        List<ObjectId> bookIds = mongoTemplate.findAllAndRemove(bookQuery, Book.class)
+                .stream()
+                .map(b -> new ObjectId(b.getId()))
+                .toList();
+        Query queryComment = Query.query(Criteria.where("book.$id").in(bookIds));
+        mongoTemplate.remove(queryComment, Comment.class).getDeletedCount();
     }
 
     @Override

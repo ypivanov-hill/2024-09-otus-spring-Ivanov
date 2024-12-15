@@ -14,7 +14,6 @@ import ru.otus.hw.repositories.GenreRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -84,9 +83,6 @@ public class BookServiceImpl implements BookService {
     }
 
     public List<BookCountByGenreDto> getBookCountByGenre() {
-        return bookRepository.getBookCountByGenre().entrySet()
-                .stream()
-                .map(e -> new BookCountByGenreDto(e.getKey(), e.getValue()))
-                .collect(Collectors.toList());
+        return bookRepository.getBookCountByGenre();
     }
 }

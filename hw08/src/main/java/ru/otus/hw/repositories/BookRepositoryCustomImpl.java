@@ -1,16 +1,17 @@
 package ru.otus.hw.repositories;
 
-import com.mongodb.BasicDBObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import ru.otus.hw.dto.BookCountByGenreDto;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
@@ -24,7 +25,7 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Map<String, Long> getBookCountByGenre() {
+    public List<BookCountByGenreDto> getBookCountByGenre() {
         Map<String, Long> resultMap = new HashMap<>();
 
         Aggregation aggregation = newAggregation(
@@ -32,11 +33,8 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
                 , group("genres.name").count().as("count")
                 , sort(Sort.by(Sort.Direction.ASC, "_id"))
         );
-        mongoTemplate.aggregate(aggregation,Book.class, BasicDBObject.class)
-                .getMappedResults()
-                .forEach(row -> resultMap.put(row.getString("_id"), row.getLong("count")));
-
-        return resultMap;
+        return mongoTemplate.aggregate(aggregation,Book.class, BookCountByGenreDto.class)
+                .getMappedResults();
 
     }
 
