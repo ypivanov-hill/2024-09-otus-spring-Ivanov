@@ -1,0 +1,35 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: hw08Mongo
+
+    properties:
+      hibernate:
+        format_sql: true
+
+    show-sql: true
+
+mongock:
+  runner-type: "InitializingBean"
+  change-logs-scan-package:
+    - ru.otus.hw.changelogs
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+#  lock:
+#    timeout: 30s
+#    retry:
+#      enabled: true
+#      max-retries: 10
+#      backoff:
+#        enabled: true
+#        initial-backoff: 1s
+#        max-backoff: 10s
+#        multiplier: 2
+#logging:
+#  level:
+#    com.github.cloudyrock.mongock: DEBUG
+#    org.springframework.data.mongodb.core: DEBUG
