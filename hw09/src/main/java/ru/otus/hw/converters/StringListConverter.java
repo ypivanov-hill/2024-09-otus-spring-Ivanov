@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import ru.otus.hw.dto.GenreDto;
 
 
-@Component
+//@Component
 @Slf4j
 public class StringListConverter implements Converter<String, GenreDto> {
     private static final String SPLIT_CHAR = ",";
@@ -21,16 +21,17 @@ public class StringListConverter implements Converter<String, GenreDto> {
     public GenreDto convert(String source) {
         log.info("source {}", source);
 
-        JsonNode jsonNode = null;
-        source = source.replace("GenreDto(", "{").replace(")","}");
-        try {
-            jsonNode = mapper.readTree(source);
+        GenreDto genreDto = null;
+        //source = source.replace("GenreDto(", "{").replace(")","}");
 
-            return new GenreDto(jsonNode.get("id").asText(), jsonNode.get("name").asText());
+        try {
+            genreDto = mapper.readValue(source, GenreDto.class);// readTree(source);
         } catch (JsonProcessingException e) {
-            log.info("JsonProcessingException {}", e.getMessage());
+            log.info("source {}", e.getMessage());
         }
-        return null;//List.of();
+
+        return genreDto;
+
     }
 
     // Go nuts on List to string here...

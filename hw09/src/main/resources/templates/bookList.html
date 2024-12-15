@@ -39,6 +39,7 @@
         <th>Genres</th>
         <th></th>
         <th></th>
+        <th></th>
     </tr>
     </thead>
     <tbody>
@@ -50,6 +51,9 @@
             <ul>
                 <li th:each="genre : ${book.genres}" th:text="${genre.name}">genre name</li>
             </ul>
+        </td>
+        <td>
+            <a href="commentEdit.html" th:href="@{/comment(bookId=${book.id})}">Comments</a>
         </td>
         <td>
             <a href="bookEdit.html" th:href="@{/edit/{id}(id=${book.id})}">Edit</a>

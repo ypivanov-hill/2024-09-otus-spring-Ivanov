@@ -24,6 +24,7 @@ import ru.otus.hw.services.GenreService;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -60,10 +61,10 @@ public class BookController {
     ) {
         log.info("Book id {}", id);
         log.info("Book bookDto {}", text);
-       // log.info("authorId {}", bookDto.getAuthor().getId());
-       // log.info("genreIds {}", genreIds.toString());
-       // log.info("genreIds size {}", genreIds.size());
-        //var savedBook = bookService.update(book);
+        log.info("authorId {}", bookDto.getAuthor().getId());
+        log.info("genreIds {}", bookDto.getGenres().toString());
+        log.info("genreIds size {}", bookDto.getGenres().size());
+        var savedBook = bookService.update(id, bookDto.getTitle(), bookDto.getAuthor().getId(), bookDto.getGenres().stream().map(GenreDto::getId).collect(Collectors.toSet()));
         return "redirect:/";
     }
 

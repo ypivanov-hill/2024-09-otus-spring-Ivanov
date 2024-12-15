@@ -54,9 +54,9 @@
             </span>
                 <select id="genre-select"  th:field="${book.genres}" multiple="multiple"> <!-- th:field="${book.genres}"  -->
                     <option th:each="genreOption : ${genresOptions}"
-                            th:value="${genreOption}"
+                            th:value="${genreOption.id}"
                             th:text="${genreOption.name}"
-                            th:selected="${book.genres.contains(genreOption)}">
+                            th:selected="${book.genres.contains(genreOption.id)}">
                     </option>
                 </select>
 

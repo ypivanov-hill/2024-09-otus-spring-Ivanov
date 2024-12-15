@@ -49,13 +49,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookDto insert(String title, String authorFullName, Set<String> genreNames) {
-        return save(null, title, authorFullName, genreNames);
+    public BookDto insert(String title, String authorId, Set<String> genreIds) {
+        return save(null, title, authorId, genreIds);
     }
 
     @Override
-    public BookDto update(String id, String title, String authorFullName, Set<String> genreNames) {
-        return save(id, title, authorFullName, genreNames);
+    public BookDto update(String id, String title, String authorId, Set<String> genreIds) {
+        return save(id, title, authorId, genreIds);
     }
 
     @Override
@@ -74,15 +74,16 @@ public class BookServiceImpl implements BookService {
     }
 
 
-    private BookDto save(String id, String title, String authorFullName, Set<String> genreNames) {
-        if (isEmpty(genreNames)) {
+    private BookDto save(String id, String title, String authorId, Set<String> genreIds) {
+        if (isEmpty(genreIds)) {
             throw new IllegalArgumentException("Genres ids must not be null");
         }
 
-        var author = authorRepository.findOneByFullName(authorFullName);
-        var genres = genreRepository.findAllByNameIn(genreNames);
-        if (isEmpty(genres) || genreNames.size() != genres.size()) {
-            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genreNames));
+        var author = authorRepository.findById(authorId)
+                .orElseThrow(() ->new EntityNotFoundException("Author with ids %s not found".formatted(genreIds)));
+        var genres = genreRepository.findAllById(genreIds);
+        if (isEmpty(genres) || genreIds.size() != genres.size()) {
+            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genreIds));
         }
 
         var book = new Book(id, title, author, genres);
