@@ -52,11 +52,11 @@
                 <p th:text="${genre.name}"></p>
                 <p th:text="${genre.id}"></p>
             </span>
-                <select id="genre-select"  th:field="${book.genres}" multiple="multiple"> <!-- th:field="${book.genres}"  -->
+                <select id="genre-select"  th:field="${book.genres}" multiple="multiple">
                     <option th:each="genreOption : ${genresOptions}"
                             th:value="${genreOption.id}"
                             th:text="${genreOption.name}"
-                            th:selected="${book.genres.contains(genreOption.id)}">
+                            th:selected="${book.genres.contains(genreOption)}">
                     </option>
                 </select>
 

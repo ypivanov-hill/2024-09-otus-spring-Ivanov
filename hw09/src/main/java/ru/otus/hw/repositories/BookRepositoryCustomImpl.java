@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import ru.otus.hw.dto.BookCountByGenreDto;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 
@@ -25,14 +26,15 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
     private final CommentRepository commentRepository;
 
     @Override
-    public List<BasicDBObject> getBookCountByGenre() {
+    public List<BookCountByGenreDto> getBookCountByGenre() {
+
         Aggregation aggregation = newAggregation(
                 unwind("genres")
                 , group("genres.name").count().as("count")
                 , sort(Sort.by(Sort.Direction.ASC, "_id"))
         );
-
-        return mongoTemplate.aggregate(aggregation, Book.class, BasicDBObject.class).getMappedResults();
+        return mongoTemplate.aggregate(aggregation,Book.class, BookCountByGenreDto.class)
+                .getMappedResults();
 
     }
 
