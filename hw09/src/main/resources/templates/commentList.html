@@ -14,7 +14,10 @@
         }
 
         input:read-only {
-            background: lightgray;
+            background: none;
+              border: none;
+              padding: 2px;
+              width: 200px;
         }
 
         .comments {
@@ -36,6 +39,18 @@
 </head>
 <body>
 <a th:href="@{/}">Books</a>
+
+<div>
+    <form id="add-form" action="#" th:method="post" th:action="@{/comment/edit(bookId=${book.id})}">
+        <label for="new-comment-text-input">New comment:</label>
+        <input id="new-comment-text-input" name="new-text" type="text" th:value="${newtext}"/>
+        <button type="submit">Add</button>
+    </form>
+</div>
+
+<h3>Comments:</h3>
+<form id="edit-form" action="bookEdit.html" th:method="post" th:action="@{/comment/edit(bookId=${book.id})}"
+      th:object="${comments}">
 <table class="comments">
     <thead>
     <tr>
@@ -44,24 +59,31 @@
         <th>Book title</th>
         <th>Book author</th>
         <th></th>
-        <th></th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="comment : ${comments}">
-        <td th:text="${comment.id}">Id</td>
-        <td th:text="${comment.text}">Text</td>
-
-        <td th:text="${comment.book.title}">Book Title</td>
-        <td th:text="${comment.book.author.fullName}">Book Author</td>
-         <td>
-            <!--a href="commentList.html" th:href="@{/edit/{id}(id=${book.id})}">Edit</a-->
+        <td>
+            <input id="comment-id-input" readonly name="id" type="text" th:value="${comment.id}"></input>
         </td>
         <td>
-            <a th:href="@{/deleteById(id=${comment.id},bookId=${comment.book.id})}">Delete</a>
+         <input id="comment-text-input" name="text" type="text" th:value="${comment.text}"/>
+        </td>
+
+        <td th:text="${comment.book.title}">Book Title</td>
+        <td>
+            <p th:each="authorOption : ${authorOptions}" th:value="${authorOption.id}" th:if="${comment.book.authorId == (authorOption.id)}" th:text="${authorOption.fullName}">Full Name</p>
+        </td>
+        <td>
+            <a th:href="@{/deleteById(id=${comment.id},bookId=${book.id})}">Delete</a>
         </td>
     </tr>
     </tbody>
 </table>
+    <div class="row">
+        <button type="submit">Save</button>
+        <a href="bookList.html" th:href="@{/}"><button type="button">Cancel</button></a>
+    </div>
+</form>
 </body>
 </html>

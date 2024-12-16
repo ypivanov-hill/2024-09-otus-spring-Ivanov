@@ -15,6 +15,7 @@ import java.util.Optional;
 public class AuthorServiceImpl implements AuthorService {
 
     private final AuthorRepository authorRepository;
+
     private final AuthorConverter authorConverter;
 
     @Override
@@ -27,13 +28,4 @@ public class AuthorServiceImpl implements AuthorService {
         return authorRepository.findById(id);
     }
 
-    @Override
-    public List<Author> findByFullName(String fullName) {
-        return authorRepository.findByFullName(fullName);
-    }
-
-    @Override
-    public void deleteByFullName(String fullName) {
-        authorRepository.deleteByFullName(fullName);
-    }
 }

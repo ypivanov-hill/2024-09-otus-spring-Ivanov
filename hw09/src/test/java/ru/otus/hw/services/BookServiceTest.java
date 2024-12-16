@@ -1,6 +1,7 @@
 package ru.otus.hw.services;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
@@ -16,6 +17,7 @@ import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
+import ru.otus.hw.models.Genre;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +54,7 @@ class BookServiceTest {
     private MongoOperations mongoTemplate;
 
     @DisplayName("возвращать книгу по её id")
+    @Order(1)
     @Test
     void shouldFindById() {
         Query query = new Query(Criteria.where("title").is(FIRST_BOOK_NAME));
@@ -63,24 +66,21 @@ class BookServiceTest {
                 .hasFieldOrPropertyWithValue("title", FIRST_BOOK_NAME);
     }
 
-    @DisplayName("возвращать книгу по её названию")
-    @Test
-    void shouldFindByTitle() {
-        Optional<BookDto> returnedBook = bookService.findByTitleIgnoreCase(FIRST_BOOK_NAME);
-        assertThat(returnedBook).isNotEmpty().get()
-                .hasFieldOrPropertyWithValue("title", FIRST_BOOK_NAME);
-    }
 
     @DisplayName("находить все все книги")
+    @Order(2)
     @Test
     void shouldFindAllBooks() {
-        List<BookDto> expectedBooks = bookService.findAll();
-        assertThat(expectedBooks)
-                .hasSize(BOOK_COUNT)
+
+        var expectedBooks = mongoTemplate.findAll(Book.class);
+        List<BookDto> returnedBooks = bookService.findAll();
+        assertThat(returnedBooks)
+                .hasSize(expectedBooks.size())
                 .anyMatch(book -> FIRST_BOOK_NAME.equals(book.getTitle()));
     }
 
     @DisplayName("добавлять новые книги")
+    @Order(3)
     @Test
     void shouldInsertBook() {
 
@@ -90,19 +90,23 @@ class BookServiceTest {
         var expectedAuthor = mongoTemplate.findOne(query, Author.class);
         assertThat(expectedAuthor).isNotNull();
 
+        query = new Query(Criteria.where("name").is(FIRST_GENRE_NAME));
+        var expectedGenre = mongoTemplate.findOne(query, Genre.class);
+        assertThat(expectedGenre).isNotNull();
+
         int beforeInsetCount = expectedBooks.size();
 
-        BookDto returnedBook = bookService.insert(NEW_BOOK_TITLE, FIRST_AUTHOR_FULL_NAME, Set.of(FIRST_GENRE_NAME, SECOND_GENRE_NAME));
+        BookDto returnedBook = bookService.insert(NEW_BOOK_TITLE, expectedAuthor.getId(), Set.of(expectedGenre.getId()));
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() != null)
                 .hasFieldOrPropertyWithValue("title", NEW_BOOK_TITLE);
 
-        assertThat(returnedBook.getAuthor()).isNotNull()
-                .hasFieldOrPropertyWithValue("id", expectedAuthor.getId());
+        assertThat(returnedBook.getAuthorId()).isNotNull()
+                .hasToString(expectedAuthor.getId());
 
-        assertThat(returnedBook.getGenres())
-                .hasSize(2)
-                .anyMatch(genre -> genre.getName().equals(FIRST_GENRE_NAME));
+        assertThat(returnedBook.getGenreIds())
+                .hasSize(1)
+                .anyMatch(genre -> genre.equals(expectedGenre.getId()));
 
         expectedBooks = mongoTemplate.findAll(Book.class);
         assertThat(expectedBooks).isNotEmpty()
@@ -110,25 +114,36 @@ class BookServiceTest {
     }
 
     @DisplayName("изменять книги")
+    @Order(4)
     @Test
     void shouldUpdateBook() {
         Query query = new Query(Criteria.where("title").is(THIRD_BOOK_NAME));
         var expectedBook = mongoTemplate.findOne(query, Book.class);
         assertThat(expectedBook).isNotNull();
 
-        BookDto returnedBook = bookService.update(expectedBook.getId(), NEW_BOOK_TITLE, FIRST_AUTHOR_FULL_NAME, Set.of(FIRST_GENRE_NAME, SECOND_GENRE_NAME));
+        query = new Query(Criteria.where("fullName").is(FIRST_AUTHOR_FULL_NAME));
+        var expectedAuthor = mongoTemplate.findOne(query, Author.class);
+        assertThat(expectedAuthor).isNotNull();
+
+        query = new Query(Criteria.where("name").is(FIRST_GENRE_NAME));
+        var expectedGenre = mongoTemplate.findOne(query, Genre.class);
+        assertThat(expectedGenre).isNotNull();
+
+        BookDto returnedBook = bookService.update(expectedBook.getId(), NEW_BOOK_TITLE, expectedAuthor.getId(), Set.of(expectedGenre.getId()));
         assertThat(returnedBook).isNotNull()
                 .hasFieldOrPropertyWithValue("title", NEW_BOOK_TITLE);
 
-        assertThat(returnedBook.getAuthor()).isNotNull()
-                .hasFieldOrPropertyWithValue("fullName", FIRST_AUTHOR_FULL_NAME);
 
-        assertThat(returnedBook.getGenres())
-                .hasSize(2)
-                .anyMatch(genre -> genre.getName().equals(FIRST_GENRE_NAME));
+        assertThat(returnedBook.getAuthorId()).isNotNull()
+                .hasToString(expectedAuthor.getId());
+
+        assertThat(returnedBook.getGenreIds())
+                .hasSize(1)
+                .anyMatch(genre -> genre.equals(expectedGenre.getId()));
     }
 
     @DisplayName("удалять книги и все комментарии по id")
+    @Order(7)
     @Test
     void shouldDeleteBookById() {
 
@@ -145,6 +160,7 @@ class BookServiceTest {
     }
 
     @DisplayName("должен отображать автора")
+    @Order(5)
     @Test
     void shouldFindAuthorInBook() {
         Query query = new Query(Criteria.where("title").is(FIRST_BOOK_NAME));
@@ -153,17 +169,19 @@ class BookServiceTest {
 
         assertThat(expectedBook.getGenres()).isNotEmpty().first().isNotNull();
 
-        String expectedAuthorFullName = expectedBook.getAuthor().getFullName();
+        String expectedAuthorId = expectedBook.getAuthor().getId();
 
-        Optional<BookDto> returnedBook = bookService.findByTitleIgnoreCase(FIRST_BOOK_NAME);
+
+        Optional<BookDto> returnedBook = bookService.findById(expectedBook.getId());
 
         assertThat(returnedBook).isNotEmpty();
 
-        assertThat(returnedBook.get().getAuthor()).isNotNull()
-                .hasFieldOrPropertyWithValue("fullName", expectedAuthorFullName);
+        assertThat(returnedBook.get().getAuthorId()).isNotNull()
+                .hasToString(expectedAuthorId);
     }
 
     @DisplayName("должен отображать жанры")
+    @Order(6)
     @Test
     void shouldFindAllGenresInBook() {
 
@@ -176,25 +194,13 @@ class BookServiceTest {
         int expectedGenresCount = expectedBook.getGenres().size();
         String expectedGenreId = expectedBook.getGenres().get(0).getId();
 
-        Optional<BookDto> returnedBook = bookService.findByTitleIgnoreCase(FIRST_BOOK_NAME);
+        Optional<BookDto> returnedBook = bookService.findById(expectedBook.getId());
 
         assertThat(returnedBook).isNotEmpty();
 
-        assertThat(returnedBook.get().getGenres())
+        assertThat(returnedBook.get().getGenreIds())
                 .isNotNull()
                 .hasSize(expectedGenresCount)
-                .anyMatch(genre -> genre.getId().equals(expectedGenreId));
-    }
-
-    @DisplayName("не должен отображать комментарии")
-    @Test
-    void shouldFindCommentsInBook() {
-        Optional<BookDto> returnedBook = bookService.findByTitleIgnoreCase(FIRST_BOOK_NAME);
-
-        assertThat(returnedBook).isNotEmpty();
-
-        assertThat(returnedBook.get().getComments())
-                .isNotNull()
-                .hasSize(0);
+                .anyMatch(genre -> genre.equals(expectedGenreId));
     }
 }

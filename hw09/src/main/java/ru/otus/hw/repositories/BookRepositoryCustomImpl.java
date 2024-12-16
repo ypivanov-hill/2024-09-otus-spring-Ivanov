@@ -1,6 +1,5 @@
 package ru.otus.hw.repositories;
 
-import com.mongodb.BasicDBObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;

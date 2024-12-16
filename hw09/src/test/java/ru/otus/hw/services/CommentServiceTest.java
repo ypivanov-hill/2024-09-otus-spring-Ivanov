@@ -76,19 +76,6 @@ class CommentServiceTest {
                 .anyMatch(commentDto -> FOURTH_COMMENT_TEXT.equals(commentDto.getText()));
     }
 
-    @DisplayName("находить все комментарии по названию книги")
-    @Test
-    void shouldFindAllCommentsByBookTitle() {
-        Query query = new Query(Criteria.where("title").is(SECOND_BOOK_NAME));
-        var expectedBook = mongoTemplate.findOne(query, Book.class);
-        assertThat(expectedBook).isNotNull();
-
-        List<CommentDto> expectedComments = commentService.findByBookTitle(SECOND_BOOK_NAME);
-        assertThat(expectedComments).hasSize(FIRST_BOOK_COMMENTS_COUNT)
-                .allMatch(commentDto -> SECOND_BOOK_NAME.equals(commentDto.getBook().getTitle()))
-                .anyMatch(commentDto -> FOURTH_COMMENT_TEXT.equals(commentDto.getText()));
-    }
-
     @DisplayName("добавлять новые комментарии к книгам")
     @Test
     void shouldInsertComment() {
@@ -103,7 +90,7 @@ class CommentServiceTest {
 
         int beforeCommentCount = comments.size();
 
-        CommentDto commentDto = commentService.insert(NEW_COMMENT_TEXT, THIRD_BOOK_NAME);
+        CommentDto commentDto = commentService.insert(NEW_COMMENT_TEXT, book.getId());
         assertThat(commentDto).isNotNull()
                 .hasFieldOrPropertyWithValue("text", NEW_COMMENT_TEXT);
 
@@ -124,7 +111,7 @@ class CommentServiceTest {
 
         var expectedComment = getFirstCommentByBookTitle(THIRD_BOOK_NAME);
 
-        CommentDto returnedComment = commentService.update(expectedComment.getId(), NEW_COMMENT_TEXT, FIRST_BOOK_NAME);
+        CommentDto returnedComment = commentService.update(expectedComment.getId(), NEW_COMMENT_TEXT, expectedComment.getBook().getId());
         assertThat(returnedComment).isNotNull();
 
         Query queryComments = new Query(Criteria.where("id").is(expectedComment.getId()));
@@ -159,8 +146,8 @@ class CommentServiceTest {
 
         assertThat(returnedComment).isNotEmpty();
 
-        assertThat(returnedComment.get().getBook()).isNotNull().extracting(BookDto::getAuthor)
-                .hasFieldOrPropertyWithValue("fullName", comment.getBook().getAuthor().getFullName());
+        assertThat(returnedComment.get().getBook()).isNotNull().extracting(BookDto::getAuthorId)
+                .hasToString(comment.getBook().getAuthor().getId());
     }
 
     @DisplayName("не должен отображать жанры")
@@ -174,9 +161,9 @@ class CommentServiceTest {
         assertThat(returnedComment.get())
                 .extracting(CommentDto::getBook)
                 .isNotNull()
-                .extracting(BookDto::getGenres)
+                .extracting(BookDto::getGenreIds)
                 .isNotNull();
-        assertThat(returnedComment.get().getBook().getGenres())
+        assertThat(returnedComment.get().getBook().getGenreIds())
                 .isEmpty();
 
     }

@@ -12,17 +12,13 @@ public interface BookService {
 
     List<BookDto> findAll();
 
-    BookDto insert(String title, String authorFullName, Set<String> genreNames);
+    BookDto insert(String title, String authorId, Set<String> genreIds);
 
-    BookDto update(String id, String title, String authorFullName, Set<String> genreNames);
+    BookDto update(String id, String title, String authorId, Set<String> genreIds);
 
     BookDto update(BookDto bookDto);
 
     void deleteById(String id);
-
-    void deleteByTitle(String title);
-
-    Optional<BookDto> findByTitleIgnoreCase(String title);
 
     List<BookCountByGenreDto> getBookCountByGenre();
 }

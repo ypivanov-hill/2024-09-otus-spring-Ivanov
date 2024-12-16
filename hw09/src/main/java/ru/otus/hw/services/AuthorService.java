@@ -12,7 +12,4 @@ public interface AuthorService {
 
     Optional<Author> findById(String id);
 
-    List<Author> findByFullName(String fullName);
-
-    void deleteByFullName(String fullName);
 }

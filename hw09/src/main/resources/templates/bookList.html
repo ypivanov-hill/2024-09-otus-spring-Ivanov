@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>List of all persons</title>
+    <title>List of all books</title>
     <style type="text/css">
         body {
             padding: 50px;
@@ -46,10 +46,12 @@
     <tr th:each="book : ${books}">
         <td th:text="${book.id}">1</td>
         <td th:text="${book.title}">Book Title</td>
-        <td th:text="${book.author.fullName}">Book Author</td>
+        <td>
+            <p th:each="authorOption : ${authorOptions}" th:value="${authorOption.id}" th:if="${book.authorId == (authorOption.id)}" th:text="${authorOption.fullName}">fullName</p>
+        </td>
         <td>
             <ul>
-                <li th:each="genre : ${book.genres}" th:text="${genre.name}">genre name</li>
+                <li th:each="genreOption : ${genresOptions}" th:text="${genreOption.name}" th:if="${book.genreIds.contains(genreOption.id)}">genre name</li>
             </ul>
         </td>
         <td>
