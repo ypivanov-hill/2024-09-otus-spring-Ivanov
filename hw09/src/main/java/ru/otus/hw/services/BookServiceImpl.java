@@ -3,6 +3,7 @@ package ru.otus.hw.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.converters.BookConverter;
+import ru.otus.hw.dto.BookCompliteDto;
 import ru.otus.hw.dto.BookCountByGenreDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
@@ -35,9 +36,9 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookDto> findAll() {
+    public List<BookCompliteDto> findAll() {
         List<Book>  books = bookRepository.findAll();
-        return books.stream().map(bookConverter::bookToDto).toList();
+        return books.stream().map(bookConverter::bookToCompliteDto).toList();
     }
 
     @Override

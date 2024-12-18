@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.converters.AuthorConverter;
 import ru.otus.hw.converters.BookConverter;
+import ru.otus.hw.dto.BookCompliteDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -73,7 +74,7 @@ class BookServiceTest {
     void shouldFindAllBooks() {
 
         var expectedBooks = mongoTemplate.findAll(Book.class);
-        List<BookDto> returnedBooks = bookService.findAll();
+        List<BookCompliteDto> returnedBooks = bookService.findAll();
         assertThat(returnedBooks)
                 .hasSize(expectedBooks.size())
                 .anyMatch(book -> FIRST_BOOK_NAME.equals(book.getTitle()));

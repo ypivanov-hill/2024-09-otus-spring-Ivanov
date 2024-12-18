@@ -26,7 +26,7 @@
         .delete-button {
             border: unset;
             background: unset;
-            color: blue;
+            color: -webkit-link;
             cursor: pointer;
             text-decoration: underline;
             font-family: serif;
@@ -57,12 +57,10 @@
     <tr th:each="book : ${books}">
         <td th:text="${book.id}">1</td>
         <td th:text="${book.title}">Book Title</td>
-        <td>
-            <p th:each="authorOption : ${authorOptions}" th:value="${authorOption.id}" th:if="${book.authorId == (authorOption.id)}" th:text="${authorOption.fullName}">fullName</p>
-        </td>
+        <td th:text="${book.author.fullName}">fullName</td>
         <td>
             <ul>
-                <li th:each="genreOption : ${genresOptions}" th:text="${genreOption.name}" th:if="${book.genreIds.contains(genreOption.id)}">genre name</li>
+                <li th:each="genreOption : ${book.genres}" th:text="${genreOption.name}">genre name</li>
             </ul>
         </td>
         <td>

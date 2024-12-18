@@ -1,6 +1,5 @@
 package ru.otus.hw.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.otus.hw.dto.AuthorDto;
+import ru.otus.hw.dto.BookCompliteDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
@@ -35,14 +35,8 @@ public class BookController {
 
     @GetMapping("/")
     public String findAllBooks(Model model) {
-        List<BookDto> books = bookService.findAll();
+        List<BookCompliteDto> books = bookService.findAll();
         model.addAttribute("books", books);
-
-        List<AuthorDto> authors = authorService.findAll();
-        model.addAttribute("authorOptions", authors);
-
-        List<GenreDto> genres = genreService.findAll();
-        model.addAttribute("genresOptions", genres);
         return "bookList";
     }
 
@@ -50,14 +44,8 @@ public class BookController {
     public String deleteBookById(@PathVariable String id, Model model) {
 
         bookService.deleteById(id);
-        List<BookDto> books = bookService.findAll();
+        List<BookCompliteDto> books = bookService.findAll();
         model.addAttribute("books", books);
-
-        List<AuthorDto> authors = authorService.findAll();
-        model.addAttribute("authorOptions", authors);
-
-        List<GenreDto> genres = genreService.findAll();
-        model.addAttribute("genresOptions", genres);
         return "redirect:/";
     }
 

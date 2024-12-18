@@ -3,18 +3,13 @@ package ru.otus.hw.controller;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.otus.hw.dto.AuthorDto;
+import ru.otus.hw.dto.BookCompliteDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
@@ -53,6 +48,7 @@ public class BookControllerTest {
     private List<BookDto> books = List.of(new BookDto("BoolId1", "TestBook1", "AuthorId1", List.of("GenreId1", "GenreId2")),
             new BookDto("2L", "TestBook2", "AuthorId2", List.of("GenreId3", "GenreId4")));
 
+
     private List<AuthorDto> authors = List.of(new AuthorDto("AuthorId1", "Author 1 FullName"),
             new AuthorDto("AuthorId2", "Author 2 FullName"));
 
@@ -61,17 +57,16 @@ public class BookControllerTest {
             new GenreDto("GenreId3", "Genre3"),
             new GenreDto("GenreId4", "Genre4"));
 
+    private List<BookCompliteDto> booksComplite = List.of(new BookCompliteDto("BoolId1", "TestBook1", authors.get(0), List.of(genres.get(0),genres.get(1))),
+            new BookCompliteDto("2L", "TestBook2", authors.get(1), List.of(genres.get(2),genres.get(3))));
+
     @DisplayName("должен отображать спиcок книг на главной странице")
     @Test
     void shouldRenderListPageWithCorrectViewAndModelAttributes() throws Exception {
-        when(bookService.findAll()).thenReturn(books);
-        when(authorService.findAll()).thenReturn(authors);
-        when(genreService.findAll()).thenReturn(genres);
+        when(bookService.findAll()).thenReturn(booksComplite);
         mvc.perform(get("/"))
                 .andExpect(view().name("bookList"))
-                .andExpect(model().attribute("books", books))
-                .andExpect(model().attribute("authorOptions", authors))
-                .andExpect(model().attribute("genresOptions", genres));
+                .andExpect(model().attribute("books", booksComplite));
     }
 
     @DisplayName("должен отображать книгу для изменения ")
