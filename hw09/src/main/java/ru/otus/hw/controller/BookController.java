@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,7 +46,7 @@ public class BookController {
         return "bookList";
     }
 
-    @GetMapping("/deleteBookById/{id}")
+    @DeleteMapping("/deleteBookById/{id}")
     public String deleteBookById(@PathVariable String id, Model model) {
 
         bookService.deleteById(id);
@@ -58,13 +58,12 @@ public class BookController {
 
         List<GenreDto> genres = genreService.findAll();
         model.addAttribute("genresOptions", genres);
-        return "bookList";
+        return "redirect:/";
     }
 
     @PostMapping("/edit")
     public String updateBook(@RequestParam(required = false) String id,
-                             @Valid @ModelAttribute("book") BookDto bookDto,
-                             BindingResult bindingResult) {
+                             @ModelAttribute("book") BookDto bookDto) {
         if (id == null || "".equals(id)) {
             bookService.insert(bookDto.getTitle(),
                     bookDto.getAuthorId(),

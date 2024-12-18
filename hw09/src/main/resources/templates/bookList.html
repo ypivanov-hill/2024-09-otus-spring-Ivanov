@@ -22,6 +22,17 @@
         .books td:last-child, td:first-child {
             width: 50px;
         }
+
+        .delete-button {
+            border: unset;
+            background: unset;
+            color: blue;
+            cursor: pointer;
+            text-decoration: underline;
+            font-family: serif;
+            font-size: inherit;
+        }
+
     </style>
 </head>
 <body>
@@ -61,7 +72,9 @@
             <a href="bookEdit.html" th:href="@{/edit/{id}(id=${book.id})}">Edit</a>
         </td>
         <td>
-            <a th:href="@{/deleteBookById/{id}(id=${book.id})}">Delete</a>
+           <form action="#" th:action="@{/deleteBookById/{id}(id=${book.id})}"  th:method="delete">
+                <button id="delete-button" class="delete-button" type="submit">Delete</button>
+           </form>
         </td>
     </tr>
     </tbody>

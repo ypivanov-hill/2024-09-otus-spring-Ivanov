@@ -79,7 +79,7 @@ public class CommentControllerTest {
         mvc.perform(get("/deleteById")
                         .param("id", comments.get(0).getId())
                         .param("bookId", comments.get(0).getBook().getId()))
-                .andExpect(view().name("commentList"));
+                .andExpect(view().name("redirect:/comment?bookId=" + book.getId()));
 
         verify(commentService, times(1)).deleteById(comments.get(0).getId());
     }

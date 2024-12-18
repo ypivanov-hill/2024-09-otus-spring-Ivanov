@@ -75,6 +75,6 @@ public class CommentController {
         List<CommentDto> commentDtos = commentService.findByBookId(bookId);
         model.addAttribute("comments", commentDtos);
 
-        return "commentList";
+        return "redirect:/comment?bookId=" + bookId;
     }
 }
