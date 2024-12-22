@@ -46,6 +46,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public void updateOrDelete(String id, String text, String bookId) {
+        if (text == null || text.isEmpty()) {
+            deleteById(id);
+        } else {
+            update(id, text, bookId);
+        }
+    }
+
+    @Override
     public void deleteById(String id) {
         commentRepository.deleteById(id);
     }

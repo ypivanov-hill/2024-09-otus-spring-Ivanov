@@ -17,9 +17,10 @@ public interface BookService {
 
     BookDto update(String id, String title, String authorId, Set<String> genreIds);
 
-    BookDto update(BookDto bookDto);
 
     void deleteById(String id);
 
     List<BookCountByGenreDto> getBookCountByGenre();
+
+    BookDto save(String id, BookDto bookDto);
 }

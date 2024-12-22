@@ -21,6 +21,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -76,7 +77,7 @@ public class CommentControllerTest {
     void shouldDeletAndRenderPageWithCorrectViewAttributes() throws Exception {
         when(bookService.findById(book.getId())).thenReturn(Optional.ofNullable(book));
         when(commentService.findByBookId(book.getId())).thenReturn(comments);
-        mvc.perform(get("/deleteById")
+        mvc.perform(delete("/deleteById")
                         .param("id", comments.get(0).getId())
                         .param("bookId", comments.get(0).getBook().getId()))
                 .andExpect(view().name("redirect:/comment?bookId=" + book.getId()));
@@ -95,7 +96,7 @@ public class CommentControllerTest {
                         .param("bookId", comments.get(0).getBook().getId()))
                 .andExpect(view().name("redirect:/comment?bookId=" + comments.get(0).getBook().getId()));
 
-        verify(commentService, times(1)).update(comments.get(0).getId(), comments.get(0).getText(),comments.get(0).getBook().getId());
+        verify(commentService, times(1)).updateOrDelete(comments.get(0).getId(), comments.get(0).getText(),comments.get(0).getBook().getId());
     }
 
     @DisplayName("должен создавать новый комментарий")
@@ -103,7 +104,7 @@ public class CommentControllerTest {
     void shouldInsertAndRenderPageWithCorrectViewAttributes() throws Exception {
 
 
-        mvc.perform(post("/comment/edit")
+        mvc.perform(post("/comment/new")
                         .param("bookId", comments.get(0).getBook().getId())
                         .param("new-text", "Some Comment"))
                 .andExpect(view().name("redirect:/comment?bookId=" + comments.get(0).getBook().getId()));

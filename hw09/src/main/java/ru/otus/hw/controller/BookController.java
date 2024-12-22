@@ -20,7 +20,6 @@ import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.GenreService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -52,16 +51,7 @@ public class BookController {
     @PostMapping("/edit")
     public String updateBook(@RequestParam(required = false) String id,
                              @ModelAttribute("book") BookDto bookDto) {
-        if (id == null || "".equals(id)) {
-            bookService.insert(bookDto.getTitle(),
-                    bookDto.getAuthorId(),
-                    bookDto.getGenreIds().stream().collect(Collectors.toSet()));
-        } else {
-            bookService.update(id,
-                    bookDto.getTitle(),
-                    bookDto.getAuthorId(),
-                    bookDto.getGenreIds().stream().collect(Collectors.toSet()));
-        }
+        bookService.save(id, bookDto);
         return "redirect:/";
     }
 
@@ -71,26 +61,28 @@ public class BookController {
         BookDto book = bookService.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Invalid book Id:" + id));
         model.addAttribute("book", book);
-        List<AuthorDto> authors = authorService.findAll();
-        model.addAttribute("authorOptions", authors);
-
-        List<GenreDto> genres = genreService.findAll();
-        model.addAttribute("genresOptions", genres);
+        addReferences(model);
 
         return "bookEdit";
     }
 
     @GetMapping("/create")
     public String createBookById(Model model) {
+        addReferences(model);
+        List<AuthorDto> authors = (List<AuthorDto>)model.getAttribute("authorOptions");
+        List<GenreDto> genres = (List<GenreDto>)model.getAttribute("genresOptions");
+        BookDto book = new BookDto(null, null, authors.get(0).getId(), List.of(genres.get(0).getId()));
+        model.addAttribute("book", book);
+
+        return "bookEdit";
+    }
+
+    private void addReferences(Model model) {
         List<AuthorDto> authors = authorService.findAll();
         model.addAttribute("authorOptions", authors);
 
         List<GenreDto> genres = genreService.findAll();
         model.addAttribute("genresOptions", genres);
-        BookDto book = new BookDto(null, null, authors.get(0).getId(), List.of(genres.get(0).getId()));
-        model.addAttribute("book", book);
-
-        return "bookEdit";
     }
 
 }

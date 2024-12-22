@@ -15,6 +15,7 @@ import ru.otus.hw.repositories.GenreRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -31,13 +32,13 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Optional<BookDto> findById(String id) {
-        Optional<Book>  book = bookRepository.findById(id);
+        Optional<Book> book = bookRepository.findById(id);
         return book.map(bookConverter::bookToDto);
     }
 
     @Override
     public List<BookCompliteDto> findAll() {
-        List<Book>  books = bookRepository.findAll();
+        List<Book> books = bookRepository.findAll();
         return books.stream().map(bookConverter::bookToCompliteDto).toList();
     }
 
@@ -52,16 +53,9 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookDto update(BookDto bookDto) {
-        return save(bookDto);
-    }
-
-    @Override
     public void deleteById(String id) {
         bookRepository.deleteBookById(id);
     }
-
-
 
     private BookDto save(String id, String title, String authorId, Set<String> genreIds) {
         if (isEmpty(genreIds)) {
@@ -79,22 +73,19 @@ public class BookServiceImpl implements BookService {
         return bookConverter.bookToDto(bookRepository.save(book));
     }
 
-    private BookDto save(BookDto bookDto) {
-        if (bookDto.getGenreIds().isEmpty()) {
-            throw new IllegalArgumentException("Genres ids must not be null");
+    public BookDto save(String id, BookDto bookDto) {
+        BookDto returnedBookDto;
+        if (id == null || "".equals(id)) {
+            returnedBookDto = insert(bookDto.getTitle(),
+                    bookDto.getAuthorId(),
+                    bookDto.getGenreIds().stream().collect(Collectors.toSet()));
+        } else {
+            returnedBookDto = update(id,
+                    bookDto.getTitle(),
+                    bookDto.getAuthorId(),
+                    bookDto.getGenreIds().stream().collect(Collectors.toSet()));
         }
-
-        var author = authorRepository.findById(bookDto.getAuthorId())
-                .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found"
-                        .formatted(bookDto.getAuthorId())));
-        var genres = genreRepository.findAllById(bookDto.getGenreIds());
-        if (genres.isEmpty() || bookDto.getGenreIds().size() != genres.size()) {
-            throw new EntityNotFoundException("One or all genres with ids %s not found"
-                    .formatted(bookDto.getGenreIds()));
-        }
-
-        var book = new Book(bookDto.getId(), bookDto.getTitle(), author, genres);
-        return bookConverter.bookToDto(bookRepository.save(book));
+        return returnedBookDto;
     }
 
     public List<BookCountByGenreDto> getBookCountByGenre() {

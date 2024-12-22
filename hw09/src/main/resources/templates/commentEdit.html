@@ -35,27 +35,20 @@
             width: 50px;
         }
 
-        .delete-button {
-            border: unset;
-            background: unset;
-            color: -webkit-link;
-            cursor: pointer;
-            text-decoration: underline;
-            font-family: serif;
-            font-size: inherit;
-        }
+
     </style>
 </head>
 </head>
 <body>
 <ul>
     <li><a th:href="@{/}">Books</a></li>
-    <li> <a th:href="@{/comment/new(bookId=${book.id})}">Add new comment</a></li>
-    <li><a th:href="@{/comment/edit(bookId=${book.id})}">Edit comments</a></li>
+    <li><a th:href="@{/comment/new(bookId=${book.id})}">Add new comment</a></li>
+    <li><a th:href="@{/comment(bookId=${book.id})}">Comment list</a></li>
 </ul>
 
-<h3>Comments:</h3>
-
+<h3>Edit Comments:</h3>
+<form id="edit-form" action="bookEdit.html" th:method="post" th:action="@{/comment/edit(bookId=${book.id})}"
+      th:object="${comments}">
 <table class="comments">
     <thead>
     <tr>
@@ -63,25 +56,28 @@
         <th>Comment</th>
         <th>Book title</th>
         <th>Book author</th>
-        <th></th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="comment : ${comments}">
-        <td th:text="${comment.id}">comment.id</td>
-        <td th:text="${comment.text}">comment.text</td>
-        <td th:text="${comment.book.title}">Book Title</td>
         <td>
-            <p th:each="authorOption : ${authorOptions}" th:value="${authorOption.id}"
-               th:if="${comment.book.authorId == (authorOption.id)}" th:text="${authorOption.fullName}">Full Name</p>
+            <input id="comment-id-input" readonly name="id" type="text" th:value="${comment.id}"></input>
         </td>
         <td>
-            <form action="#" th:action="@{/deleteById(id=${comment.id},bookId=${book.id})}" th:method="delete">
-                <button id="delete-button" class="delete-button" type="submit">Delete</button>
-            </form>
+         <input id="comment-text-input" name="text" type="text" th:value="${comment.text}"/>
+        </td>
+
+        <td th:text="${comment.book.title}">Book Title</td>
+        <td>
+            <p th:each="authorOption : ${authorOptions}" th:value="${authorOption.id}" th:if="${comment.book.authorId == (authorOption.id)}" th:text="${authorOption.fullName}">Full Name</p>
         </td>
     </tr>
     </tbody>
 </table>
+    <div class="row">
+        <button type="submit">Save</button>
+        <a href="bookList.html" th:href="@{/}"><button type="button">Cancel</button></a>
+    </div>
+</form>
 </body>
 </html>

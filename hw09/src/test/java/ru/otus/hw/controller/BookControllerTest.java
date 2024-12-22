@@ -107,10 +107,7 @@ public class BookControllerTest {
                 )
                 .andExpect(view().name("redirect:/"));
 
-        verify(bookService, times(1)).update(expectedBook.getId(),
-                "New Title",
-                expectedBook.getAuthorId(),
-                expectedBook.getGenreIds().stream().collect(Collectors.toSet()));
+        verify(bookService, times(1)).save(newBook.getId(),newBook);
     }
 
 }
