@@ -10,7 +10,12 @@ spring:
         format_sql: true
 
     show-sql: true
-
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    operationsSorter: method
 mongock:
   runner-type: "InitializingBean"
   change-logs-scan-package:

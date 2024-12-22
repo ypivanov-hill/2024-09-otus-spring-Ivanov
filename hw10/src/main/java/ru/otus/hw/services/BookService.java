@@ -1,7 +1,9 @@
 package ru.otus.hw.services;
 
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookCountByGenreDto;
 import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.GenreDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,15 +14,11 @@ public interface BookService {
 
     List<BookDto> findAll();
 
-    BookDto insert(String title, String authorFullName, Set<String> genreNames);
+    BookDto insert(String title, AuthorDto author, Set<GenreDto> genres);
 
-    BookDto update(String id, String title, String authorFullName, Set<String> genreNames);
+    BookDto update(String id, String title, AuthorDto author, Set<GenreDto> genres);
 
     void deleteById(String id);
-
-    void deleteByTitle(String title);
-
-    Optional<BookDto> findByTitleIgnoreCase(String title);
 
     List<BookCountByGenreDto> getBookCountByGenre();
 }

@@ -25,12 +25,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public List<Author> findByFullName(String fullName) {
-        return authorRepository.findByFullName(fullName);
-    }
+    public void deleteById(String id){ authorRepository.deleteById(id); };
 
-    @Override
-    public void deleteByFullName(String fullName) {
-        authorRepository.deleteByFullName(fullName);
-    }
+
 }

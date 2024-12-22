@@ -12,16 +12,16 @@ import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 
 @NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
+declarations: [
+AppComponent
+],
+imports: [
+BrowserModule,
+AppRoutingModule,
 BrowserAnimationsModule,
 ButtonModule
-  ],
-  providers: [
+],
+providers: [
 provideAnimationsAsync(),
         providePrimeNG({
             theme: {
