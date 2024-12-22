@@ -10,7 +10,7 @@ public interface AuthorService {
 
     List<AuthorDto> findAll();
 
-    Optional<Author> findById(String id);
+    Optional<AuthorDto> findById(String id);
 
     List<Author> findByFullName(String fullName);
 

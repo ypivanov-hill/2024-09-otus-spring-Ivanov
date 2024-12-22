@@ -6,24 +6,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import ru.otus.hw.converters.BookConverter;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
+import ru.otus.hw.formatter.AuthorPropertyEditor;
+import ru.otus.hw.formatter.GenrePropertyEditor;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.GenreService;
 
 import java.util.List;
-import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -35,6 +30,12 @@ public class BookController {
     private final AuthorService authorService;
 
     private final GenreService genreService;
+
+    @InitBinder(value="book")
+    protected void initBinder(final WebDataBinder binder) {
+        binder.registerCustomEditor(GenreDto.class, new GenrePropertyEditor(genreService));
+        binder.registerCustomEditor(AuthorDto.class, new AuthorPropertyEditor(authorService));
+    }
 
     @GetMapping("/")
     public String findAllBooks(Model model) {
@@ -52,18 +53,13 @@ public class BookController {
     }
     @PostMapping("/edit/{id}")
     public String updateBook(@PathVariable String id,
-                             @RequestBody String text,
                              @Valid @ModelAttribute("book") BookDto bookDto,
-                             //@Valid @ModelAttribute("GenreDto") List<GenreDto> GenreDto,
-                             BindingResult bindingResult/*,
-                             @RequestParam(value = "GenreDto", defaultValue = "")  List<GenreDto> genreIds*/
+                             BindingResult result
     ) {
-        log.info("Book id {}", id);
-        log.info("Book bookDto {}", text);
-       // log.info("authorId {}", bookDto.getAuthor().getId());
-       // log.info("genreIds {}", genreIds.toString());
-       // log.info("genreIds size {}", genreIds.size());
-        //var savedBook = bookService.update(book);
+        if (result.hasErrors()) {
+            return "bookEdit";
+        }
+        bookService.update(bookDto);
         return "redirect:/";
     }
 

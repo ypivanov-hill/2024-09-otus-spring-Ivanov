@@ -23,8 +23,8 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public Optional<Author> findById(String id) {
-        return authorRepository.findById(id);
+    public Optional<AuthorDto> findById(String id) {
+        return authorRepository.findById(id).map(authorConverter::authorToDto);
     }
 
     @Override
