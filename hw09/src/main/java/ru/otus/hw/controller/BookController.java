@@ -69,9 +69,7 @@ public class BookController {
     @GetMapping("/create")
     public String createBookById(Model model) {
         addReferences(model);
-        List<AuthorDto> authors = (List<AuthorDto>)model.getAttribute("authorOptions");
-        List<GenreDto> genres = (List<GenreDto>)model.getAttribute("genresOptions");
-        BookDto book = new BookDto(null, null, authors.get(0).getId(), List.of(genres.get(0).getId()));
+        BookDto book = new BookDto(null, null, null, List.of());
         model.addAttribute("book", book);
 
         return "bookEdit";
