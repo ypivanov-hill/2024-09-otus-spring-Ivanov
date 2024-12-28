@@ -1,3 +1,4 @@
+
 package ru.otus.hw.services;
 
 import org.junit.jupiter.api.DisplayName;
@@ -10,9 +11,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.otus.hw.converters.AuthorConverter;
+import ru.otus.hw.converters.BookConverter;
 import ru.otus.hw.converters.CommentConvertor;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
@@ -26,7 +30,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("Сервис для комментариев должен")
 @DataMongoTest
 @Import({CommentServiceImpl.class,
-       CommentConvertor.class})
+        CommentConvertor.class,
+        BookConverter.class,
+        AuthorConverter.class})
 @Transactional(propagation = Propagation.NEVER)
 class CommentServiceTest {
 
@@ -47,6 +53,9 @@ class CommentServiceTest {
 
     @Autowired
     private MongoOperations mongoTemplate;
+
+    @Autowired
+    private BookConverter bookConverter;
 
     @DisplayName("возвращать комментарий и книгу по его id")
     @Test
@@ -76,19 +85,6 @@ class CommentServiceTest {
                 .anyMatch(commentDto -> FOURTH_COMMENT_TEXT.equals(commentDto.getText()));
     }
 
-    @DisplayName("находить все комментарии по названию книги")
-    @Test
-    void shouldFindAllCommentsByBookTitle() {
-        Query query = new Query(Criteria.where("title").is(SECOND_BOOK_NAME));
-        var expectedBook = mongoTemplate.findOne(query, Book.class);
-        assertThat(expectedBook).isNotNull();
-
-        List<CommentDto> expectedComments = commentService.findByBookTitle(SECOND_BOOK_NAME);
-        assertThat(expectedComments).hasSize(FIRST_BOOK_COMMENTS_COUNT)
-                .allMatch(commentDto -> SECOND_BOOK_NAME.equals(commentDto.getBook().getTitle()))
-                .anyMatch(commentDto -> FOURTH_COMMENT_TEXT.equals(commentDto.getText()));
-    }
-
     @DisplayName("добавлять новые комментарии к книгам")
     @Test
     void shouldInsertComment() {
@@ -103,7 +99,7 @@ class CommentServiceTest {
 
         int beforeCommentCount = comments.size();
 
-        CommentDto commentDto = commentService.insert(NEW_COMMENT_TEXT, THIRD_BOOK_NAME);
+        CommentDto commentDto = commentService.insert(NEW_COMMENT_TEXT, bookConverter.bookToDto(book));
         assertThat(commentDto).isNotNull()
                 .hasFieldOrPropertyWithValue("text", NEW_COMMENT_TEXT);
 
@@ -124,11 +120,13 @@ class CommentServiceTest {
 
         var expectedComment = getFirstCommentByBookTitle(THIRD_BOOK_NAME);
 
-        CommentDto returnedComment = commentService.update(expectedComment.getId(), NEW_COMMENT_TEXT, FIRST_BOOK_NAME);
+        CommentDto returnedComment = commentService.update(expectedComment.getId(),
+                NEW_COMMENT_TEXT,
+                bookConverter.bookToDto(expectedComment.getBook()));
         assertThat(returnedComment).isNotNull();
 
         Query queryComments = new Query(Criteria.where("id").is(expectedComment.getId()));
-         expectedComment = mongoTemplate.findOne(queryComments, Comment.class);
+        expectedComment = mongoTemplate.findOne(queryComments, Comment.class);
 
         assertThat(expectedComment)
                 .isNotNull()
@@ -159,8 +157,11 @@ class CommentServiceTest {
 
         assertThat(returnedComment).isNotEmpty();
 
-        assertThat(returnedComment.get().getBook()).isNotNull().extracting(BookDto::getAuthor)
-                .hasFieldOrPropertyWithValue("fullName", comment.getBook().getAuthor().getFullName());
+        assertThat(returnedComment.get().getBook())
+                .isNotNull()
+                .extracting(BookDto::getAuthor)
+                .extracting(AuthorDto::getId)
+                .hasToString(comment.getBook().getAuthor().getId());
     }
 
     @DisplayName("не должен отображать жанры")
@@ -187,7 +188,11 @@ class CommentServiceTest {
 
         var comment = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
 
-        assertThatThrownBy(() -> { commentService.update(comment.getId(), NEW_COMMENT_TEXT, WRONG_BOOK_NAME); })
+        var wrongBook = comment.getBook();
+        wrongBook.setId(WRONG_BOOK_NAME);
+        wrongBook.setTitle(WRONG_BOOK_NAME);
+
+        assertThatThrownBy(() -> { commentService.update(comment.getId(), NEW_COMMENT_TEXT, bookConverter.bookToDto(wrongBook)); })
                 . isInstanceOf(EntityNotFoundException.class);
     }
 

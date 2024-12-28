@@ -3,9 +3,9 @@ package ru.otus.hw.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.converters.CommentConvertor;
+import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
-import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.CommentRepository;
@@ -37,21 +37,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDto> findByBookTitle(String bookTitle) {
-        Book book = bookRepository.findByTitleIgnoreCase(bookTitle)
-                .orElseThrow(() -> new EntityNotFoundException("Book with title %s not found".formatted(bookTitle)));
-        List<Comment> comments = commentRepository.findByBookId(book.getId());
-        return comments.stream().map(commentConvertor::commentToCommentDto).toList();
+    public CommentDto insert(String text, BookDto book) {
+        return save(null, text, book);
     }
 
     @Override
-    public CommentDto insert(String text, String bookTitle) {
-        return save(null, text, bookTitle);
-    }
-
-    @Override
-    public CommentDto update(String id, String text, String bookTitle) {
-        return save(id, text, bookTitle);
+    public CommentDto update(String id, String text,BookDto book) {
+        return save(id, text, book);
     }
 
     @Override
@@ -59,9 +51,9 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.deleteById(id);
     }
 
-    private CommentDto save(String id, String text, String bookTitle) {
-        var book = bookRepository.findByTitleIgnoreCase(bookTitle)
-                .orElseThrow(() -> new EntityNotFoundException("Book with id %s not found".formatted(bookTitle)));
+    private CommentDto save(String id, String text, BookDto bookDto) {
+        var book = bookRepository.findById(bookDto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Book with id %s not found".formatted(bookDto.getId())));
         Comment comment;
         if (id == null) {
             comment = new Comment(text, book);

@@ -1,16 +1,17 @@
 package ru.otus.hw.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 
 @AllArgsConstructor
-@Getter
+@Data
 public class CommentDto {
 
-    private final String id;
+    private String id;
 
-    private final String text;
+    private String text;
 
-    private final BookDto book;
+    private BookDto book;
+
 }

@@ -31,7 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataMongoTest
 @Import({BookServiceImpl.class,
         BookConverter.class,
-        AuthorConverter.class})
+        AuthorConverter.class,
+        GenreConverter.class})
 @Transactional(propagation = Propagation.NEVER)
 class BookServiceTest {
 
@@ -187,7 +188,7 @@ class BookServiceTest {
 
         assertThat(returnedBook).isNotEmpty();
 
-        assertThat(returnedBook.get().getAuthor()).isNotNull()
+        assertThat(returnedBook.get().getAuthor().getId()).isNotNull()
                 .hasToString(expectedAuthorId);
     }
 

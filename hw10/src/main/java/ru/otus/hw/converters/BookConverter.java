@@ -3,7 +3,6 @@ package ru.otus.hw.converters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.otus.hw.dto.AuthorDto;
-import ru.otus.hw.dto.BookCommentDto;
 import ru.otus.hw.dto.BookCountByGenreDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.GenreDto;
@@ -35,8 +34,7 @@ public class BookConverter {
                 .map(genre -> new GenreDto(genre.getId(), genre.getName()))
                 .toList();
         AuthorDto author = new AuthorDto(book.getAuthor().getId(), book.getAuthor().getFullName());
-        List<BookCommentDto> commentList = List.of();
-        return new BookDto(book.getId(), book.getTitle(),author, genresList, commentList);
+        return new BookDto(book.getId(), book.getTitle(),author, genresList);
     }
 
     public String bookCountByGenreToString(List<BookCountByGenreDto> records) {

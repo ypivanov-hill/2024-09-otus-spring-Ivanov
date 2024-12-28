@@ -28,7 +28,6 @@ public class CommentConvertor {
         BookDto bookDto = new BookDto(comment.getBook().getId(),
                 comment.getBook().getTitle(),
                 authorDto,
-                Collections.emptyList(),
                 Collections.emptyList());
         return new CommentDto(comment.getId(), comment.getText(), bookDto);
     }

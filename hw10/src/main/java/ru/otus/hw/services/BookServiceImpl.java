@@ -65,10 +65,14 @@ public class BookServiceImpl implements BookService {
         }
 
         var author = authorRepository.findById(authorDto.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Author %s not found".formatted(authorDto.getFullName())));
-        var genres = genreRepository.findAllById(genreDtos.stream().map(GenreDto::getId).collect(Collectors.toSet()));
+                .orElseThrow(() -> new IllegalArgumentException("Author %s not found"
+                        .formatted(authorDto.getFullName())));
+        var genres = genreRepository.findAllById(genreDtos.stream()
+                .map(GenreDto::getId)
+                .collect(Collectors.toSet()));
         if (isEmpty(genres) || genres.size() != genreDtos.size()) {
-            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genreDtos));
+            throw new EntityNotFoundException("One or all genres with ids %s not found"
+                    .formatted(genreDtos));
         }
 
         var book = new Book(id, title, author, genres);
