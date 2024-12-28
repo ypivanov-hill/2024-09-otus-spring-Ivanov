@@ -45,17 +45,6 @@
             <td>{{comments.book.title}}</td>
             <td>
               <p-button icon="pi pi-pencil" (click)="showDialog(comments)" severity="secondary" rounded/>
-              <p-dialog header="Edit comment" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '25rem' }">
-                <div class="flex items-center gap-4 mb-4">
-                  <label for="comment-text-edit" class="font-semibold w-24">Text</label>
-                  <input pInputText id="comment-text-edit" [(ngModel)]="this.selectedComment.text" class="flex-auto"
-                         autocomplete="off"/>
-                </div>
-                <div class="flex justify-end gap-2">
-                  <p-button label="Cancel" severity="secondary" (click)="cancelDialog()"/>
-                  <p-button label="Save" (click)="saveDialog()"/>
-                </div>
-              </p-dialog>
             </td>
             <td>
               <p-button icon="pi pi-trash" (click)="deleteComment(comments)" severity="secondary" rounded/>
@@ -66,5 +55,16 @@
     </p-card>
   </div>
 </div>
+<p-dialog header="Edit comment" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '25rem' }">
+  <div class="flex items-center gap-4 mb-4">
+    <label for="comment-text-edit" class="font-semibold w-24">Text</label>
+    <input pInputText id="comment-text-edit" [(ngModel)]="this.selectedComment.text" class="flex-auto"
+           autocomplete="off"/>
+  </div>
+  <div class="flex justify-end gap-2">
+    <p-button label="Cancel" severity="secondary" (click)="cancelDialog()"/>
+    <p-button label="Save" (click)="saveDialog()"/>
+  </div>
+</p-dialog>
 
 
