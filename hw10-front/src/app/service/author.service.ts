@@ -33,10 +33,11 @@ export class AuthorService {
 
     let httpOptions = {
       headers: httpHeaders,
-      params: httpParams
+      params: httpParams,
+      responseType: 'text' as 'text'
     };
     let url: string = "/api/v1/author/" + authorId;
-    let authorRequest  = this.http.delete<AuthorModel[]>(url, httpOptions);
+    let authorRequest  = this.http.delete(url, httpOptions);
     return authorRequest;
   }
 }

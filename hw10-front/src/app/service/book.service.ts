@@ -83,16 +83,17 @@ export class BookService {
 
   public deleteBookById(bookId:string) {
     let httpHeaders = new HttpHeaders()
-      .set("Content-Type", "application/json");
+      .set("Content-Type", "text/plain");
 
     let httpParams = new HttpParams();
-
+   
     let httpOptions = {
       headers: httpHeaders,
-      params: httpParams
+      params: httpParams,
+      responseType: 'text' as 'text'
     };
     let url: string = "/api/v1/book/"+bookId;
-    let booksRequest  = this.http.delete<BookModel[]>(url, httpOptions);
+    let booksRequest  = this.http.delete(url, httpOptions);
     return booksRequest;
   }
 }

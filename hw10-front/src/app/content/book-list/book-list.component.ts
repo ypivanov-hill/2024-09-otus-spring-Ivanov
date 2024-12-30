@@ -16,7 +16,8 @@ export class BookListComponent  implements OnInit  {
   public books!: BookModel[];
 
   constructor(private bookService:BookService,
-              private router: Router ) {
+              private router: Router,
+              private message:MessageService ) {
 
   }
   ngOnInit(): void {
@@ -46,15 +47,16 @@ export class BookListComponent  implements OnInit  {
   }
 
   public deleteBook(book:BookModel) {
-    console.log("deleteBooks book " + book.title);
+    this.isLoadingResult = true;
     this.bookService.deleteBookById(book.id).subscribe({
       next: (v) => {
-        this.books = v;
+        let index = this.books.findIndex(a => a.id === v); 
+        this.books.splice(index, 1);
         this.isLoadingResult = false;
+        this.message.add({severity: 'info', summary: 'Info', detail: 'Delete complete', life: 3000});
       },
       error: (err) => {
-
-        console.log("error2 " + err.toString());
+        this.message.add({severity: 'error', summary: 'Error', detail: err.error, life: 3000});
         this.isLoadingResult = false;
       }
     });

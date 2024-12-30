@@ -38,7 +38,8 @@ export class AuthorListComponent implements OnInit {
     this.authorService.deleteAuthorById(author.id)
       .subscribe({
         next: (v) => {
-          this.author = v;
+          let index = this.author.findIndex(a => a.id === v); 
+          this.author.splice(index, 1);
         },
         error: (err) => {
          this.message.add({severity: 'error', summary: 'Error', detail: err.error, life: 3000});

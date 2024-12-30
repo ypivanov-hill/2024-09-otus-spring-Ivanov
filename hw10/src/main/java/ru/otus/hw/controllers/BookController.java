@@ -36,11 +36,9 @@ public class BookController {
     }
 
     @DeleteMapping("/api/v1/book/{id}")
-    public ResponseEntity<List<BookDto>> deleteBookById(@PathVariable String id) {
-
+    public ResponseEntity<String> deleteBookById(@PathVariable String id) {
         bookService.deleteById(id);
-        List<BookDto> books = bookService.findAll();
-        return ResponseEntity.ok(books);
+        return ResponseEntity.ok(id);
     }
 
     @PostMapping("/api/v1/book")

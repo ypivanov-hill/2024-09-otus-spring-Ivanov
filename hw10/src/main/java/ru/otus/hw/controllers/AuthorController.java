@@ -24,9 +24,9 @@ public class AuthorController {
     }
 
     @DeleteMapping("/api/v1/author/{id}")
-    public ResponseEntity<List<AuthorDto>> deleteById(@PathVariable String id) {
+    public ResponseEntity<String> deleteById(@PathVariable String id) {
         authorService.deleteById(id);
-        return ResponseEntity.ok(authorService.findAll());
+        return ResponseEntity.ok(id);
     }
 
     @GetMapping("/api/v1/author/{id}")
