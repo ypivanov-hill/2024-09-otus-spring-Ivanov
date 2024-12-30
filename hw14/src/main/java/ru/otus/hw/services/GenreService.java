@@ -7,4 +7,6 @@ import ru.otus.hw.models.out.GenreNew;
 public interface GenreService {
 
     GenreNew getGenreNew(Genre genre);
+
+    void reserveSequenceValues();
 }

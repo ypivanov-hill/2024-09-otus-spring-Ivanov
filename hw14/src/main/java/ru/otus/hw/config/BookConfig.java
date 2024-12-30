@@ -7,6 +7,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.MethodInvokingTaskletAdapter;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.data.MongoPagingItemReader;
@@ -38,6 +39,9 @@ public class BookConfig {
 
     @Autowired
     private JobRepository jobRepository;
+
+    @Autowired
+    private BookService bookService;
 
     @Bean
     public Step transformBookStep(ItemReader<Book> reader, JdbcBatchItemWriter<BookNew> writer,
@@ -88,6 +92,23 @@ public class BookConfig {
                 .dataSource(dataSource)
                 .sql("insert into books (id, title, author_id) values (:id, :title, :authorId)")
                 .beanMapped()
+                .build();
+    }
+
+    @Bean
+    public MethodInvokingTaskletAdapter beforeBooksTasklet() {
+        MethodInvokingTaskletAdapter adapter = new MethodInvokingTaskletAdapter();
+
+        adapter.setTargetObject(bookService);
+        adapter.setTargetMethod("reserveSequenceValues");
+
+        return adapter;
+    }
+
+    @Bean
+    public Step beforeBooksStep() {
+        return new StepBuilder("beforeBooksStep", jobRepository)
+                .tasklet(beforeBooksTasklet(), platformTransactionManager)
                 .build();
     }
 }

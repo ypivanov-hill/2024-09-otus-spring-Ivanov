@@ -39,16 +39,30 @@ public class JobConfig {
     @Autowired
     private MappingService mappingService;
 
+    @Autowired
+    private Step transformBookStep;
+
+    @Autowired
+    private Step transformCommentStep;
+
+    @Autowired
+    private Step transformBookGenreStep;
+
+    @Autowired
+    private Step beforeCommentsStep;
+
+    @Autowired
+    private Step beforeBooksStep;
+
     @Bean
     public Job importJob(Flow splitFlow,
-                         Step transformBookStep,
-                         Step transformCommentStep,
-                         Step transformBookGenreStep,
                          Step cleanUpStep) {
         return new JobBuilder(IMPORT_JOB_NAME, jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .start(splitFlow)
+                .next(beforeBooksStep)
                 .next(transformBookStep)
+                .next(beforeCommentsStep)
                 .next(transformCommentStep)
                 .next(transformBookGenreStep)
                 .next(cleanUpStep)
@@ -66,7 +80,6 @@ public class JobConfig {
                 })
                 .build();
     }
-
 
     @Bean
     public MethodInvokingTaskletAdapter cleanUpTasklet() {
@@ -91,24 +104,30 @@ public class JobConfig {
     }
 
     @Bean
-    public Flow flowAuthor(Step transformAuthorStep) {
+    public Flow flowAuthor(Step transformAuthorStep,
+                           Step beforeAuthorsStep) {
         return new FlowBuilder<SimpleFlow>("flowAuthor")
-                .start(transformAuthorStep)
-                        .build();
-    }
-
-    @Bean
-    public Flow flowGenre(Step transformGenreStep) {
-        return new FlowBuilder<SimpleFlow>("flowGenre")
-                .start(transformGenreStep)
+                .start(beforeAuthorsStep)
+                .next(transformAuthorStep)
                 .build();
     }
 
     @Bean
-    public Flow splitFlow(Step transformAuthorStep, Step transformGenreStep) {
+    public Flow flowGenre(Step transformGenreStep, Step beforeGenresStep) {
+        return new FlowBuilder<SimpleFlow>("flowGenre")
+                .start(beforeGenresStep)
+                .next(transformGenreStep)
+                .build();
+    }
+
+    @Bean
+    public Flow splitFlow(Step beforeAuthorsStep,
+                          Step transformAuthorStep,
+                          Step transformGenreStep,
+                          Step beforeGenresStep) {
         return new FlowBuilder<SimpleFlow>("splitFlow")
                 .split(taskExecutor())
-                .add(flowAuthor(transformAuthorStep), flowGenre(transformGenreStep))
+                .add(flowAuthor(transformAuthorStep, beforeAuthorsStep), flowGenre(transformGenreStep, beforeGenresStep))
                 .build();
     }
 

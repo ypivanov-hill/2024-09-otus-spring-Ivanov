@@ -6,4 +6,6 @@ import ru.otus.hw.models.out.CommentNew;
 public interface CommentService {
 
     CommentNew getCommentNew(Comment comment);
+
+    void reserveSequenceValues();
 }

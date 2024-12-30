@@ -7,6 +7,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.MethodInvokingTaskletAdapter;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.data.MongoPagingItemReader;
@@ -39,6 +40,8 @@ public class GenreConfig {
     @Autowired
     private JobRepository jobRepository;
 
+    @Autowired
+    private GenreService genreService;
 
     @Bean
     public Step transformGenreStep(ItemReader<Genre> reader, JdbcBatchItemWriter<GenreNew> writer,
@@ -89,6 +92,23 @@ public class GenreConfig {
                 .dataSource(dataSource)
                 .sql("insert into genres (id, name) values (:id, :name)")
                 .beanMapped()
+                .build();
+    }
+
+    @Bean
+    public MethodInvokingTaskletAdapter beforeGenresTasklet() {
+        MethodInvokingTaskletAdapter adapter = new MethodInvokingTaskletAdapter();
+
+        adapter.setTargetObject(genreService);
+        adapter.setTargetMethod("reserveSequenceValues");
+
+        return adapter;
+    }
+
+    @Bean
+    public Step beforeGenresStep() {
+        return new StepBuilder("beforeGenresStep", jobRepository)
+                .tasklet(beforeGenresTasklet(), platformTransactionManager)
                 .build();
     }
 }

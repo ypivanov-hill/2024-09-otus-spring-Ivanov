@@ -2,12 +2,12 @@ package ru.otus.hw.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.ChunkListener;
-import org.springframework.batch.core.ItemProcessListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.MethodInvokingTaskletAdapter;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.data.MongoPagingItemReader;
@@ -64,7 +64,7 @@ public class AuthorConfig {
     @StepScope
     public MongoPagingItemReader<Author> readerAuthor(MongoTemplate template) {
         Map<String, Sort.Direction> sorts = Map.of("id", Sort.Direction.ASC);
-        var reader =  new MongoPagingItemReaderBuilder<Author>()
+        return new MongoPagingItemReaderBuilder<Author>()
                 .name("authorItemReader")
                 .template(template)
                 .jsonQuery("{}")
@@ -72,8 +72,6 @@ public class AuthorConfig {
                 .pageSize(100)
                 .sorts(sorts)
                 .build();
-        reader.setSaveState(Boolean.FALSE);
-        return reader;
     }
 
     @Bean
@@ -87,6 +85,23 @@ public class AuthorConfig {
                 .dataSource(dataSource)
                 .sql("insert into authors (id, full_name) values (:id, :fullName)")
                 .beanMapped()
+                .build();
+    }
+
+    @Bean
+    public MethodInvokingTaskletAdapter beforeAuthorsTasklet(AuthorService authorService) {
+        MethodInvokingTaskletAdapter adapter = new MethodInvokingTaskletAdapter();
+
+        adapter.setTargetObject(authorService);
+        adapter.setTargetMethod("reserveSequenceValues");
+
+        return adapter;
+    }
+
+    @Bean
+    public Step beforeAuthorsStep(AuthorService authorService) {
+        return new StepBuilder("beforeAuthorsStep", jobRepository)
+                .tasklet(beforeAuthorsTasklet(authorService), platformTransactionManager)
                 .build();
     }
 }

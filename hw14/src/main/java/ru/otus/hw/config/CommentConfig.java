@@ -7,6 +7,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.MethodInvokingTaskletAdapter;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.data.MongoPagingItemReader;
@@ -38,6 +39,9 @@ public class CommentConfig {
 
     @Autowired
     private JobRepository jobRepository;
+
+    @Autowired
+    private CommentService commentService;
 
     @Bean
     public Step transformCommentStep(ItemReader<Comment> reader, JdbcBatchItemWriter<CommentNew> writer,
@@ -88,6 +92,23 @@ public class CommentConfig {
                 .dataSource(dataSource)
                 .sql("insert into comments (id, book_id, text) values (:id, :bookId, :text)")
                 .beanMapped()
+                .build();
+    }
+
+    @Bean
+    public MethodInvokingTaskletAdapter beforeCommentsTasklet() {
+        MethodInvokingTaskletAdapter adapter = new MethodInvokingTaskletAdapter();
+
+        adapter.setTargetObject(commentService);
+        adapter.setTargetMethod("reserveSequenceValues");
+
+        return adapter;
+    }
+
+    @Bean
+    public Step beforeCommentsStep() {
+        return new StepBuilder("beforeCommentsStep", jobRepository)
+                .tasklet(beforeCommentsTasklet(), platformTransactionManager)
                 .build();
     }
 }

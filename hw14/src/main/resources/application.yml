@@ -54,7 +54,7 @@ logging:
   level:
     root: INFO
     Batch: INFO
-    ru.otus.hw: INFO
+    ru.otus.hw: DEBUG
     #org.springframework.jdbc.core.JdbcTemplate: INFO
     #org.springframework.batch: DEBUG
     #org.springframework.data.mongodb.core: INFO
