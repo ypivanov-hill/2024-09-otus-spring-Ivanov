@@ -9,6 +9,7 @@ import ru.otus.hw.models.in.Genre;
 import ru.otus.hw.models.out.BookNew;
 import ru.otus.hw.repositories.BookRepository;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -22,20 +23,27 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
 
-    private long startIdValue;
-
-    private long endIdValue;
+    private List<Long> reservedIds;
 
     @Override
     public BookNew getBookNew(Book book) {
-        mappingService.putBookIds(startIdValue, book.getId());
+        log.debug("Book count of Id {}", reservedIds.size());
+        if (reservedIds.isEmpty()) {
+            throw new RuntimeException("There is no id to create new rows");
+        }
+        Long currentId  = reservedIds.get(0);
+        reservedIds.remove(currentId);
+        log.debug("Book count of Id {}", reservedIds.size());
+        log.debug("Book currentId {}", currentId);
+
+        mappingService.putBookIds(currentId, book.getId());
 
         for (Genre genre : book.getGenres()) {
-            mappingService.putBookToGenreIds(startIdValue,
+            mappingService.putBookToGenreIds(currentId,
                     mappingService.getGenreNewIdByOldId(genre.getId()));
         }
 
-        return new BookNew(startIdValue++,
+        return new BookNew(currentId,
                 book.getTitle(),
                 mappingService.getAuthorNewIdByOldId(book.getAuthor().getId()));
     }
@@ -43,11 +51,13 @@ public class BookServiceImpl implements BookService {
     @Override
     public void reserveSequenceValues() {
 
-        startIdValue = jdbc.queryForObject("VALUES NEXT VALUE FOR BOOKS_SEQ", Map.of(), Integer.class);
-        log.debug("Author current id value {}", startIdValue);
         long countAuthors = bookRepository.count();
-        endIdValue = startIdValue + countAuthors;
-        log.debug("Author end id value {}", endIdValue);
-        jdbc.update("ALTER SEQUENCE BOOKS_SEQ restart with :newSeqStart", Map.of("newSeqStart", endIdValue));
+
+        log.debug("Book countAuthors {}", countAuthors);
+
+        reservedIds = jdbc.queryForList("select nextval('BOOKS_SEQ') from SYSTEM_RANGE(1, :cnt)",
+                Map.of("cnt", countAuthors),
+                Long.class);
+        log.debug("Book count of Id {}", reservedIds.size());
     }
 }

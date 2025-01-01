@@ -7,6 +7,7 @@ import ru.otus.hw.models.in.Comment;
 import ru.otus.hw.models.out.CommentNew;
 import ru.otus.hw.repositories.CommentRepository;
 
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -19,12 +20,15 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
 
-    private long startIdValue;
-
-    private long endIdValue;
+    private List<Long> reservedIds;
 
     public CommentNew getCommentNew(Comment comment) {
-        return new CommentNew(startIdValue++,
+        if (reservedIds.isEmpty()) {
+            throw new RuntimeException("There is no id to create new rows");
+        }
+        Long currentId  = reservedIds.get(0);
+        reservedIds.remove(currentId);
+        return new CommentNew(currentId,
                 mappingService.getBookNewIdByOldId(comment.getBook().getId()),
                 comment.getText());
     }
@@ -32,9 +36,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void reserveSequenceValues() {
 
-        startIdValue = jdbc.queryForObject("VALUES NEXT VALUE FOR COMMENTS_SEQ", Map.of(), Integer.class);
         long countAuthors = commentRepository.count();
-        endIdValue = startIdValue + countAuthors;
-        jdbc.update("ALTER SEQUENCE COMMENTS_SEQ restart with :newSeqStart", Map.of("newSeqStart", endIdValue));
+
+        reservedIds = jdbc.queryForList("select nextval('COMMENTS_SEQ') from SYSTEM_RANGE(1, :cnt)",
+                Map.of("cnt", countAuthors),
+                Long.class);
     }
 }

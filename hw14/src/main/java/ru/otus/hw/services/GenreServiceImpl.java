@@ -7,6 +7,7 @@ import ru.otus.hw.models.in.Genre;
 import ru.otus.hw.models.out.GenreNew;
 import ru.otus.hw.repositories.GenreRepository;
 
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -19,24 +20,26 @@ public class GenreServiceImpl implements GenreService {
 
     private final NamedParameterJdbcOperations jdbc;
 
-    private long startIdValue;
-
-    private long endIdValue;
+    private List<Long> reservedIds;
 
     @Override
     public GenreNew getGenreNew(Genre genre) {
-        mappingService.putGenreIds(startIdValue, genre.getId());
-        return new GenreNew(startIdValue++, genre.getName());
+        if (reservedIds.isEmpty()) {
+            throw new RuntimeException("There is no id to create new rows");
+        }
+        Long currentId  = reservedIds.get(0);
+        reservedIds.remove(currentId);
+        mappingService.putGenreIds(currentId, genre.getId());
+        return new GenreNew(currentId, genre.getName());
     }
 
     @Override
     public void reserveSequenceValues() {
 
-        startIdValue = jdbc.queryForObject("VALUES NEXT VALUE FOR GENRES_SEQ", Map.of(), Integer.class);
         long countAuthors = genreRepository.count();
-        endIdValue = startIdValue + countAuthors;
-        jdbc.update("ALTER SEQUENCE GENRES_SEQ restart with :newSeqStart",
-                Map.of("newSeqStart", endIdValue));
-    }
 
+        reservedIds = jdbc.queryForList("select nextval('GENRES_SEQ') from SYSTEM_RANGE(1, :cnt)",
+                Map.of("cnt", countAuthors),
+                Long.class);
+    }
 }

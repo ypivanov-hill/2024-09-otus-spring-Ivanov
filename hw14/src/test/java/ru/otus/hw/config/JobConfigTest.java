@@ -1,6 +1,5 @@
 package ru.otus.hw.config;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,10 +12,8 @@ import org.springframework.batch.test.JobRepositoryTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.jdbc.core.DataClassRowMapper;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import ru.otus.hw.models.in.Author;
 import ru.otus.hw.models.in.Book;
@@ -25,12 +22,8 @@ import ru.otus.hw.models.out.AuthorNew;
 import ru.otus.hw.models.out.BookNew;
 import ru.otus.hw.models.out.GenreNew;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
-
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static ru.otus.hw.config.JobConfig.IMPORT_JOB_NAME;

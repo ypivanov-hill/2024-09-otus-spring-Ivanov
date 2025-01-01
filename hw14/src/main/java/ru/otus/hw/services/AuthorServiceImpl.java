@@ -8,6 +8,7 @@ import ru.otus.hw.models.in.Author;
 import ru.otus.hw.models.out.AuthorNew;
 import ru.otus.hw.repositories.AuthorRepository;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -21,27 +22,33 @@ public class AuthorServiceImpl implements AuthorService {
 
     private final NamedParameterJdbcOperations jdbc;
 
-    private long startIdValue;
+    private List<Long> reservedIds;
 
-    private long endIdValue;
 
     @Override
     public AuthorNew getAuthorNew(Author author) {
-        mappingService.putAuthorIds(startIdValue, author.getId());
-        return new AuthorNew(startIdValue++, author.getFullName());
+        log.debug("getAuthorNew count of Ids {}", reservedIds.size());
+        if (reservedIds.isEmpty()) {
+            throw new RuntimeException("There is no id to create new rows");
+        }
+        Long currentId  = reservedIds.get(0);
+        reservedIds.remove(currentId);
+        log.debug("getAuthorNew remaining count of Ids {}", reservedIds.size());
+        log.debug("getAuthorNew set Id {}", currentId);
+        mappingService.putAuthorIds(currentId, author.getId());
+        return new AuthorNew(currentId, author.getFullName());
     }
 
     @Override
     public void reserveSequenceValues() {
 
-        startIdValue = jdbc.queryForObject("VALUES NEXT VALUE FOR authors_seq", Map.of(), Integer.class);
-        log.debug("Author current id value {}", startIdValue);
         long countAuthors = authorRepository.count();
         log.debug("Author countAuthors {}", countAuthors);
-        endIdValue = startIdValue + countAuthors;
-        log.debug("Author newSeqStart {}", startIdValue + countAuthors);
-        jdbc.update("ALTER SEQUENCE authors_seq restart with :newSeqStart", Map.of("newSeqStart", endIdValue));
+
+        reservedIds = jdbc.queryForList("select nextval('AUTHORS_SEQ') from SYSTEM_RANGE(1, :cnt)",
+                Map.of("cnt", countAuthors),
+                Long.class);
+        log.debug("Author reservedIds {}", reservedIds.size());
+
     }
-
-
 }
