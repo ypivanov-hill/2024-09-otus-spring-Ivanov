@@ -1,0 +1,57 @@
+<p-toast></p-toast>
+<h3>Book edit page! </h3>
+
+<div class="grid" *ngIf="book">
+  <div class="col-6 col-offset-3">
+
+    <p-card [header]="book.id">
+      <div class="field">
+        <p>{{ book.id }}</p>
+      </div>
+
+      <div class="field">
+        <label for="book-title">Title</label>
+        <input id="book-title" type="text" [(ngModel)]="book.title" pInputText class="w-full"/>
+      </div>
+      <div class="field">
+        <div class="card justify-center">
+          <label for="book-author">Author</label>
+          <p-select  id="book-author" [options]="authorsOptions" [(ngModel)]="book.author"
+                    optionLabel="fullName"  class="w-full md:w-56"></p-select>
+        </div>
+      </div>
+      <div class="field">
+
+        <div class="field">
+          <div class="card justify-center">
+            <label for="genre">Genre</label>
+            <p-multiselect id="genre"
+                           [options]="genreOptions"
+                           [(ngModel)]="book.genres"
+                           optionLabel="name"
+                           [maxSelectedLabels]="3"
+                           styleClass="w-full md:w-80"/>
+          </div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+  <div class="col-6 col-offset-3">
+    <div class="flex justify-content-center flex-wrap">
+      <div class="flex align-items-center justify-content-center m-2">
+        <p-button (click)="save()">Save</p-button>
+      </div>
+      <div class="flex align-items-center justify-content-center m-2">
+        <p-button routerLink="/book-list">Cancel</p-button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+

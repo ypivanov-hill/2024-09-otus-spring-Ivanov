@@ -1,0 +1,57 @@
+<p-toast></p-toast>
+<h3>Book-list page!</h3>
+
+
+<p-card  [style]="{ width: '100%', overflow: 'hidden' }" styleClass="shadow-2">
+  <ng-template pTemplate="title">
+    <div class="flex justify-content-between flex-wrap">
+      <div class="flex align-items-center justify-content-center  m-2">Book-list</div>
+      <div class="flex align-items-center justify-content-center w-4rem h-4rem  m-2">
+        <p-button routerLink="/book-edit/new" icon="pi pi-plus" [rounded]="true" severity="primary"></p-button>
+      </div>
+    </div>
+
+
+  </ng-template>
+
+  <p-table
+    [value]="books"
+    stripedRows
+    showGridlines
+    [loading]="isLoadingResult"
+    [tableStyle]="{'min-width': '50rem'}">
+    <ng-template #header>
+      <tr>
+        <th>Id</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Genre</th>
+        <th>Comments list</th>
+        <th>Edit</th>
+        <th>Delete</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-books>
+      <tr>
+        <td>{{books.id}}</td>
+        <td>{{books.title}}</td>
+        <td>{{books.author.fullName}}</td>
+        <td>
+          <ul>
+            <li *ngFor="let genre of books.genres">{{genre.name}}</li>
+          </ul>
+        </td>
+        <td>
+          <p-button icon="pi pi-comments" (click)="gotoComments(books)" severity="secondary" rounded />
+        </td>
+        <td>
+          <p-button icon="pi pi-pencil" (click)="gotoBook(books)" severity="secondary" rounded />
+        </td>
+        <td>
+          <p-button icon="pi pi-trash" (click)="deleteBook(books)" severity="secondary" rounded />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+</p-card>
