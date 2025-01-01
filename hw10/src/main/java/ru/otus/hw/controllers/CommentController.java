@@ -1,6 +1,5 @@
 package ru.otus.hw.controllers;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,36 +28,30 @@ public class CommentController {
     public ResponseEntity<List<CommentDto>> findAllComments(@PathVariable String bookId) {
         bookService.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException("Invalid book Id:" + bookId));
-        return ResponseEntity.ok(findAllCommentsLocal(bookId));
+        return ResponseEntity.ok(commentService.findByBookId(bookId));
     }
 
     @PostMapping("/api/v1/book/{bookId}/comment")
-    public ResponseEntity<List<CommentDto>> editComment(@PathVariable String bookId,
-                                                        @RequestBody CommentDto commentDto) {
-
+    public ResponseEntity<CommentDto> editComment(@PathVariable String bookId,
+                                                  @RequestBody CommentDto commentDto) {
+        CommentDto newCommentDto = null;
         if (commentDto != null && !commentDto.getText().isEmpty()) {
-            commentService.insert(commentDto.getText(), commentDto.getBook());
+            newCommentDto = commentService.insert(commentDto.getText(), commentDto.getBook());
         }
 
-        return ResponseEntity.ok(findAllCommentsLocal(bookId));
+        return ResponseEntity.ok(newCommentDto);
     }
 
     @PutMapping("/api/v1/book/{bookId}/comment")
-    public ResponseEntity<List<CommentDto>> updateComment(@PathVariable(required = true) String bookId,
+    public ResponseEntity<CommentDto> updateComment(@PathVariable(required = true) String bookId,
                               @RequestBody CommentDto commentDto) {
-        commentService.update(commentDto.getId(), commentDto.getText(), commentDto.getBook());
-
-        return ResponseEntity.ok(findAllCommentsLocal(bookId));
+        return ResponseEntity.ok(commentService.update(commentDto.getId(), commentDto.getText(), commentDto.getBook()));
     }
 
     @DeleteMapping("/api/v1/book/{bookId}/comment/{id}")
-    public ResponseEntity<List<CommentDto>> deleteById(@PathVariable String bookId, @PathVariable String id) {
+    public ResponseEntity<String> deleteById(@PathVariable String bookId, @PathVariable String id) {
         commentService.deleteById(id);
-        return ResponseEntity.ok(findAllCommentsLocal(bookId));
+        return ResponseEntity.ok(id);
     }
 
-    private List<CommentDto> findAllCommentsLocal(String bookId) {
-
-        return commentService.findByBookId(bookId);
-    }
 }

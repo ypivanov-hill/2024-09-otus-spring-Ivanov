@@ -91,7 +91,7 @@ public class CommentControllerTest {
 
         mvc.perform(delete("/api/v1/book/{id}/comment/{id}", book.getId(), comments.get(0).getId()))
                 .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(comments)));
+                .andExpect(content().string(comments.get(0).getId()));
 
         verify(commentService, times(1)).deleteById(comments.get(0).getId());
     }
@@ -104,12 +104,12 @@ public class CommentControllerTest {
 
         CommentDto newComment = comments.get(1);
         newComment.setText("Some Comment");
-
+        when(commentService.update(any(String.class), any(String.class), any(BookDto.class))).thenReturn(newComment);
         mvc.perform(put("/api/v1/book/{bookId}/comment", book.getId())
                         .contentType("application/json")
                         .content(mapper.writeValueAsString(newComment)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(comments)));
+                .andExpect(content().json(mapper.writeValueAsString(newComment)));
 
         verify(commentService, times(1)).update(any(String.class), any(String.class), any(BookDto.class));
     }
@@ -119,11 +119,12 @@ public class CommentControllerTest {
     void shouldInsertCommentAndReturnCommentsList() throws Exception {
         when(commentService.findByBookId(book.getId())).thenReturn(comments);
         CommentDto newComment = new CommentDto(null, "Some Comment", book);
+        when(commentService.insert(any(String.class), any(BookDto.class))).thenReturn(newComment);
         mvc.perform(post("/api/v1/book/{bookId}/comment", book.getId())
                         .contentType("application/json")
                         .content(mapper.writeValueAsString(newComment)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(comments)));
+                .andExpect(content().json(mapper.writeValueAsString(newComment)));
 
         verify(commentService, times(1)).insert(any(String.class), any(BookDto.class));
     }

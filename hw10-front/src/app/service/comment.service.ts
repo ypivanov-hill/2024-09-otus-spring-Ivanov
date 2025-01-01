@@ -32,10 +32,11 @@ export class CommentService {
 
     let httpOptions = {
       headers: httpHeaders,
-      params: httpParams
+      params: httpParams,
+      responseType: 'text' as 'text'
     };
     let url: string = "/api/v1/book/" + bookId + "/comment/" + commentId;
-    let commentRequest  = this.http.delete<CommentModel[]>(url, httpOptions);
+    let commentRequest  = this.http.delete(url, httpOptions);
     return commentRequest;
   }
 
@@ -50,7 +51,7 @@ export class CommentService {
       params: httpParams
     };
     let url: string = "/api/v1/book/" + bookId + "/comment" ;
-    let commentRequest  = this.http.post<CommentModel[]>(url, comment, httpOptions);
+    let commentRequest  = this.http.post<CommentModel>(url, comment, httpOptions);
     return commentRequest;
   }
 
@@ -65,7 +66,7 @@ export class CommentService {
       params: httpParams
     };
     let url: string = "/api/v1/book/" + bookId + "/comment";
-    let commentRequest  = this.http.put<CommentModel[]>(url, comment, httpOptions);
+    let commentRequest  = this.http.put<CommentModel>(url, comment, httpOptions);
     return commentRequest;
   }
 

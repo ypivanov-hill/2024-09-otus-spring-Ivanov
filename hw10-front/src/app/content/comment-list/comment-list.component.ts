@@ -60,10 +60,10 @@ export class CommentListComponent implements OnInit {
   saveDialog() {
       console.log("saveDialog Comment id {} ", this.selectedComment.text)
       this.commentService.update(this.bookId, this.selectedComment)
-
       .subscribe({
         next: (v) => {
-          this.comments = v;
+          let index = this.comments.findIndex(a => a.id === v.id); 
+          this.comments[index] = v;
           this.isLoadingResult = false;
         },
         error: (err) => {
@@ -85,7 +85,8 @@ export class CommentListComponent implements OnInit {
 
       .subscribe({
         next: (v) => {
-          this.comments = v;
+          let index = this.comments.findIndex(a => a.id === v); 
+          this.comments.splice(index, 1);
           this.isLoadingResult = false;
         },
         error: (err) => {
@@ -117,7 +118,7 @@ export class CommentListComponent implements OnInit {
 
       .subscribe({
         next: (v) => {
-          this.comments = v;
+          this.comments.push(v);
           this.isLoadingResult = false;
         },
         error: (err) => {
