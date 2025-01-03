@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Comments</title>
+    <style type="text/css">
+        body {
+            padding: 50px;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+        }
+
+        input:read-only {
+            background: none;
+              border: none;
+              padding: 2px;
+              width: 200px;
+        }
+
+        .comments {
+            border: 1px solid steelblue;
+            width: 300px;
+            border-collapse: collapse;
+        }
+
+        .comments tr td, th {
+            padding: 5px;
+            border: 1px solid steelblue;
+        }
+
+        .comments td:last-child, td:first-child {
+            width: 50px;
+        }
+
+        .delete-button {
+            border: unset;
+            background: unset;
+            color: -webkit-link;
+            cursor: pointer;
+            text-decoration: underline;
+            font-family: serif;
+            font-size: inherit;
+        }
+    </style>
+</head>
+</head>
+<body>
+<ul>
+    <li><a th:href="@{/}">Books</a></li>
+    <li> <a th:href="@{/comment/new(bookId=${book.id})}">Add new comment</a></li>
+    <li><a th:href="@{/comment/edit(bookId=${book.id})}">Edit comments</a></li>
+</ul>
+
+<h3>Comments:</h3>
+
+<table class="comments">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Comment</th>
+        <th>Book title</th>
+        <th>Book author</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="comment : ${comments}">
+        <td th:text="${comment.id}">comment.id</td>
+        <td th:text="${comment.text}">comment.text</td>
+        <td th:text="${comment.book.title}">Book Title</td>
+        <td>
+            <p th:each="authorOption : ${authorOptions}" th:value="${authorOption.id}"
+               th:if="${comment.book.authorId == (authorOption.id)}" th:text="${authorOption.fullName}">Full Name</p>
+        </td>
+        <td>
+            <form action="#" th:action="@{/comment/deleteById(id=${comment.id},bookId=${book.id})}" th:method="delete">
+                <button id="delete-button" class="delete-button" type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
