@@ -10,12 +10,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.result.StatusResultMatchers;
 import ru.otus.hw.models.User;
 import ru.otus.hw.security.SecurityConfiguration;
 import ru.otus.hw.services.AuthorService;
@@ -54,7 +52,7 @@ public class BookControllerSecurityTest {
     private GenreService genreService;
 
 
-    @DisplayName("должен разрешать доступ к ресурсам")
+    @DisplayName("должен разрешать доступ с пользователем к ресурсам и запрещать без пользователя")
     @ParameterizedTest(name = "Проверить доступ методом {0} на урл {1} с параметрами {5} и пользователем {2}")
     @MethodSource("getTestArguments")
     void shouldTryToGetAssessToAllUrls(HttpMethod httpMethod,
@@ -63,25 +61,6 @@ public class BookControllerSecurityTest {
                                        ResultMatcher authStatus,
                                        String redirectedUrl,
                                        Object... uriVariables) throws Exception {
-
-        MockHttpServletRequestBuilder request = getRequest(httpMethod, urlTemplate, uriVariables);
-
-        mvc.perform(request
-                        .with(user(user.getUsername()).authorities(new SimpleGrantedAuthority("ROLE_" + user.getRoles().get(0))))
-                )
-                .andExpect(authStatus);
-
-    }
-
-    @DisplayName("должен запрещать доступ к ресурсам")
-    @ParameterizedTest(name = "Проверить доступ методом {0} на урл {1} с параметрами {4}")
-    @MethodSource("getTestArguments")
-    void shouldGetNoAssessToAllUrlsWithOutUser(HttpMethod httpMethod,
-                                               String urlTemplate,
-                                               User user,
-                                               ResultMatcher authStatus,
-                                               String redirectedUrl,
-                                               Object... uriVariables) throws Exception {
 
         MockHttpServletRequestBuilder request = getRequest(httpMethod, urlTemplate, uriVariables);
 
@@ -94,6 +73,15 @@ public class BookControllerSecurityTest {
             mvc.perform(request)
                     .andExpectAll(status().isOk());
         }
+
+
+        mvc.perform(request
+                        .with(user(user.getUsername()).authorities(new SimpleGrantedAuthority("ROLE_" + user.getRoles().get(0))))
+                )
+                .andExpect(authStatus);
+
+
+
     }
 
     @MethodSource("getTestArguments")

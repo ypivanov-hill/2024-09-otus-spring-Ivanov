@@ -52,7 +52,7 @@ public class CommentControllerSecurityTest {
     @MockBean
     private BookService bookService;
 
-    @DisplayName("должен разрешать доступ к ресурсам")
+    @DisplayName("должен разрешать доступ к ресурсам и запрещать доступ к ресурсам без пользователя")
     @ParameterizedTest(name = "Проверить доступ методом {0} на урл {1} с параметрами {4} {5} и пользователем {2}")
     @MethodSource("getTestArguments")
     void shouldTryToGetAssessToAllUrls(HttpMethod httpMethod,
@@ -68,32 +68,14 @@ public class CommentControllerSecurityTest {
             request.param(key, param.get(key));
         }
 
+        mvc.perform(request)
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl(LOGIN_URL));
+
         mvc.perform(request
                         .with(user(user.getUsername()).authorities(new SimpleGrantedAuthority("ROLE_" + user.getRoles().get(0))))
                 )
                 .andExpect(status);
-
-    }
-
-    @DisplayName("должен запрещать доступ к ресурсам без пользователя")
-    @ParameterizedTest(name = "Проверить доступ методом {0} на урл {1} с параметрами {4} {5}")
-    @MethodSource("getTestArguments")
-    void shouldGetNoAssessToAllUrlsWithOutUser(HttpMethod httpMethod,
-                                               String urlTemplate,
-                                               User user,
-                                               ResultMatcher status,
-                                               Map<String, String> param,
-                                               Object... uriVariables) throws Exception {
-
-        MockHttpServletRequestBuilder request = getRequest(httpMethod, urlTemplate, uriVariables);
-
-        for (String key : param.keySet()) {
-            request.param(key, param.get(key));
-        }
-
-        mvc.perform(request)
-                .andExpect(status().isFound())
-                .andExpect(redirectedUrl(LOGIN_URL));
 
     }
 
