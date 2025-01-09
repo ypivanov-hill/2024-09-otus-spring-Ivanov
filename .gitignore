@@ -18,12 +18,13 @@ checkstyle.xml
 # Node
 .angular
 node_modules
+
 npm-debug.log
 yarn-error.log
 
 
 # Visual Studio Code
-.vscode
+.vscode/*
 .vscode/settings.json
 .vscode/tasks.json
 .vscode/launch.json
