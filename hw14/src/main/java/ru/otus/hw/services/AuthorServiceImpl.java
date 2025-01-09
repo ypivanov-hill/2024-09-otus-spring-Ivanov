@@ -2,25 +2,25 @@ package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.models.in.Author;
 import ru.otus.hw.models.out.AuthorNew;
 import ru.otus.hw.repositories.AuthorRepository;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class AuthorServiceImpl implements AuthorService {
 
+    private static final String SEQUENCE_NAME = "AUTHORS_SEQ";
+
     private final MappingService mappingService;
 
     private final AuthorRepository authorRepository;
 
-    private final NamedParameterJdbcOperations jdbc;
+    private final SequenceValueService sequenceValueService;
 
     private List<Long> reservedIds;
 
@@ -42,13 +42,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public void reserveSequenceValues() {
 
-        long countAuthors = authorRepository.count();
-        log.debug("Author countAuthors {}", countAuthors);
-
-        reservedIds = jdbc.queryForList("select nextval('AUTHORS_SEQ') from SYSTEM_RANGE(1, :cnt)",
-                Map.of("cnt", countAuthors),
-                Long.class);
+        reservedIds = sequenceValueService.getSequenceValues(authorRepository.count(), SEQUENCE_NAME);
         log.debug("Author reservedIds {}", reservedIds.size());
-
     }
 }

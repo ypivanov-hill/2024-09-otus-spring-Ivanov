@@ -1,22 +1,22 @@
 package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.models.in.Comment;
 import ru.otus.hw.models.out.CommentNew;
 import ru.otus.hw.repositories.CommentRepository;
 
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
 public class CommentServiceImpl implements CommentService {
 
+    private static final String SEQUENCE_NAME = "COMMENTS_SEQ";
+
     private final MappingService mappingService;
 
-    private final NamedParameterJdbcOperations jdbc;
+    private final SequenceValueService sequenceValueService;
 
     private final CommentRepository commentRepository;
 
@@ -36,10 +36,6 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void reserveSequenceValues() {
 
-        long countAuthors = commentRepository.count();
-
-        reservedIds = jdbc.queryForList("select nextval('COMMENTS_SEQ') from SYSTEM_RANGE(1, :cnt)",
-                Map.of("cnt", countAuthors),
-                Long.class);
+        reservedIds = sequenceValueService.getSequenceValues(commentRepository.count(), SEQUENCE_NAME);
     }
 }
