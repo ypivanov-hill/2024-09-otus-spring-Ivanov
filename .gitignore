@@ -16,7 +16,9 @@ checkstyle.xml
 .sts4-cache
 
 # Node
-/node_modules
+.angular
+node_modules
+
 npm-debug.log
 yarn-error.log
 
