@@ -10,12 +10,14 @@ spring:
         format_sql: true
 
     show-sql: true
+
 springdoc:
   api-docs:
     enabled: true
     path: /api-docs
   swagger-ui:
     operationsSorter: method
+
 mongock:
   runner-type: "InitializingBean"
   change-logs-scan-package:
@@ -34,7 +36,9 @@ mongock:
 #        initial-backoff: 1s
 #        max-backoff: 10s
 #        multiplier: 2
-#logging:
-#  level:
+logging:
+  level:
+    com.github.cloudyrock.mongock: DEBUG
+    ru.otus.hw: DEBUG
 #    com.github.cloudyrock.mongock: DEBUG
 #    org.springframework.data.mongodb.core: DEBUG

@@ -1,24 +1,30 @@
 package ru.otus.hw.repositories;
 
+import com.mongodb.reactivestreams.client.MongoClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 import ru.otus.hw.models.Genre;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DisplayName("Репозиторий на основе Data для работы с книгами ")
-@DataMongoTest
+//@DataMongoTest
+@SpringBootTest
 @EnableConfigurationProperties
 class BookRepositoryTest {
 
@@ -34,24 +40,32 @@ class BookRepositoryTest {
     private static final String GENRE_TWO_NAME = "Genre_2";
 
     @Autowired
-    private MongoOperations mongoTemplate;
+    private MongoClient mongoTemplate;
 
     @Autowired
     private BookRepository bookRepository;
 
 
-    /*@DisplayName("должен загружать книгу по названию")
+    @DisplayName("должен загружать книгу по названию")
     @Test
     void shouldReturnCorrectBookById() {
         Query query = new Query(Criteria.where("title").is(BOOK_ONE_TITLE));
-        var expectedBook = mongoTemplate.findOne(query,Book.class);
-        var actualBook = bookRepository.findByTitleIgnoreCase(BOOK_ONE_TITLE);
-        assertThat(actualBook).isPresent()
-                .get()
-                .isEqualTo(expectedBook);
+        /*var expectedBook = mongoTemplate.findOne(query,Book.class);
+        assertThat(expectedBook).isNotNull();
+
+        var actualBookMono = bookRepository.findById(expectedBook.getId());
+
+        StepVerifier
+                .create(actualBookMono)
+                .assertNext(actualBook -> assertThat(actualBook)
+                        .isNotNull()
+                        .isEqualTo(expectedBook))
+                .expectComplete()
+                .verify();
+        ;*/
     }
 
-    @DisplayName("должен загружать список всех книг")
+    /*@DisplayName("должен загружать список всех книг")
     @Test
     void shouldReturnCorrectBooksList() {
         var actualBooks = bookRepository.findAll();

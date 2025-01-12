@@ -18,7 +18,8 @@ public class Application {
 				.buildRunner()
 				.execute();*/
 
-		//http://localhost:8080/swagger-ui/index.html
+		//http://localhost:8080/webjars/swagger-ui/index.html
+		System.out.println("http://localhost:8080/webjars/swagger-ui/index.html");
 		SpringApplication.run(Application.class, args);
 	}
 

@@ -12,8 +12,6 @@ import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.services.AuthorService;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 public class AuthorController {
@@ -21,8 +19,8 @@ public class AuthorController {
     private final AuthorService authorService;
 
     @GetMapping("/api/v1/author")
-    public ResponseEntity<Flux<AuthorDto>> findAllAuthor() {
-        return ResponseEntity.ok(authorService.findAll());
+    public Flux<AuthorDto> findAllAuthor() {
+        return authorService.findAll();
     }
 
     @DeleteMapping("/api/v1/author/{id}")
@@ -32,9 +30,8 @@ public class AuthorController {
     }
 
     @GetMapping("/api/v1/author/{id}")
-    public ResponseEntity<Mono<AuthorDto>> findById(@PathVariable String id) {
-        Mono<AuthorDto> authorDto = authorService.findById(id)/*
-                .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found".formatted(id)))*/;
-        return ResponseEntity.ok(authorDto);
+    public Mono<AuthorDto> findById(@PathVariable String id) {
+        return authorService.findById(id)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("Entity Not Found")));
     }
 }

@@ -15,8 +15,8 @@ import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.services.BookService;
 
+import java.time.Duration;
 import java.util.HashSet;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,15 +25,14 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping("/api/v1/book")
-    public ResponseEntity<Flux<BookDto>> findAllBooks() {
-        Flux<BookDto> books = bookService.findAll();
-        return ResponseEntity.ok(books);
+    public Flux<BookDto> findAllBooks() {
+        return bookService.findAll();
     }
 
     @GetMapping("/api/v1/book/{id}")
-    public ResponseEntity<Mono<BookDto>> findBookById(@PathVariable String id) {
-        Mono<BookDto> book = bookService.findById(id);
-        return ResponseEntity.ok(book);
+    public Mono<BookDto> findBookById(@PathVariable String id) {
+        return bookService.findById(id)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException("Entity Not Found")));
     }
 
     @DeleteMapping("/api/v1/book/{id}")
@@ -43,22 +42,18 @@ public class BookController {
     }
 
     @PostMapping("/api/v1/book")
-    public ResponseEntity<Mono<BookDto>>  createBook(@RequestBody() BookDto bookDto) {
-        Mono<BookDto> book =  bookService.insert(bookDto.getTitle(),
+    public Mono<BookDto>  createBook(@RequestBody() BookDto bookDto) {
+
+        return bookService.insert(bookDto.getTitle(),
                     bookDto.getAuthor(),
                   new HashSet<>(bookDto.getGenres()));
-
-        return ResponseEntity.ok(book);
     }
 
     @PutMapping("/api/v1/book")
-    public ResponseEntity<Mono<BookDto>>  updateBook(@RequestBody() BookDto bookDto) {
-        bookService.findById(bookDto.getId());
-        Mono<BookDto> returnedBookDto =  bookService.update(bookDto.getId(),
+    public Mono<BookDto>  updateBook(@RequestBody() BookDto bookDto) {
+        return  bookService.update(bookDto.getId(),
                 bookDto.getTitle(),
                 bookDto.getAuthor(),
                 new HashSet<>(bookDto.getGenres()));
-
-        return ResponseEntity.ok(returnedBookDto);
     }
 }

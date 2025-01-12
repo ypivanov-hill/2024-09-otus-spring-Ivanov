@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -21,12 +19,11 @@ public class Book {
 
     private String title;
 
-    private Mono<Author> author;
+    private Author author;
 
-    private Flux<Genre> genres;
+    private List<Genre> genres;
 
-
-    public Book(String title, Mono<Author> author, Flux<Genre> genres) {
+    public Book(String title, Author author, List<Genre> genres) {
         this.title = title;
         this.author = author;
         this.genres = genres;

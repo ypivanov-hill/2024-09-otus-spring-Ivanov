@@ -3,18 +3,28 @@ package ru.otus.hw.changelogs;
 import com.github.cloudyrock.mongock.ChangeLog;
 import com.github.cloudyrock.mongock.ChangeSet;
 //import com.github.cloudyrock.mongock.driver.mongodb.springdata.v3.decorator.impl.MongockTemplate;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
+import com.mongodb.internal.async.SingleResultCallback;
 import com.mongodb.reactivestreams.client.ClientSession;
 import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import io.mongock.api.annotations.BeforeExecution;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackBeforeExecution;
 import io.mongock.api.annotations.RollbackExecution;
+import io.mongock.driver.mongodb.reactive.util.MongoCollectionSync;
 import io.mongock.driver.mongodb.reactive.util.MongoSubscriberSync;
 import io.mongock.driver.mongodb.reactive.util.SubscriberSync;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.otus.hw.models.Author;
@@ -27,6 +37,8 @@ import ru.otus.hw.repositories.CommentRepository;
 import ru.otus.hw.repositories.GenreRepository;
 import io.mongock.runner.core.executor.system.changes.SystemChangeUnit00001;
 
+
+import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,9 +46,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
-@ChangeUnit(id = "db-initializer", order = "1", author = "ypi")
+@ChangeUnit(id = "db-initializer-author", order = "1", author = "ypi")
 @Slf4j
-public class InitMongoDBDataChangeLog {
+public class InitMongoDBAuthorChangeLog {
+
+    private static final String COLLECTION_NAME = "author";
 
     private static final int AUTHOR_CNT = 4;
 
@@ -46,49 +60,90 @@ public class InitMongoDBDataChangeLog {
 
     private static final int COMMENT_CNT = 3;
 
-
     private final Random random = new Random();
 
-    //@ChangeSet(order = "000", id = "dropDB", author = "ypi", runAlways = true)
-   @BeforeExecution
-    public void dropDB(MongoDatabase database) {
-        log.info("BeforeExecution dropDB {}" ,database.getName() );
-       log.info("BeforeExecution dropDB {}" ,database.listCollectionNames().first());
-        database.drop();
-       database.createCollection("Authors");
-       var a = database.getCollection("Authors");
-       var b= a.find().first();
-       log.info("BeforeExecution dropDB {}" ,a.find().first());
+    @BeforeExecution
+    public void dropDB(MongoDatabase mongoDatabase) {
+        log.info("BeforeExecution dropDB {}", mongoDatabase.getName());
+        log.info("BeforeExecution dropDB {}", mongoDatabase.listCollectionNames().first());
+        SubscriberSync<Void> subscriber = new MongoSubscriberSync<>();
+
+        /*mongoDatabase.drop().subscribe(subscriber);
+        subscriber.await();
+       // SubscriberSync<DeleteResult> subscriber = new MongoSubscriberSync<>();
+        CodecRegistry pojoCodecRegistry = CodecRegistries
+                .fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+                        CodecRegistries.fromProviders(PojoCodecProvider
+                                .builder()
+                                .automatic(true)
+                                .build()));*/
+
+        MongoCollection<Author> collection = mongoDatabase.getCollection(COLLECTION_NAME, Author.class);
+
+        collection.drop().subscribe(subscriber);
+        subscriber.await();
+
+        SubscriberSync<Void> voidSubscriber = new MongoSubscriberSync<>();
+        mongoDatabase.createCollection(COLLECTION_NAME).subscribe(voidSubscriber);
+        voidSubscriber.await();
+
+        // subscriber.get().stream().forEach(e -> System.out.println(e));
+
+        //SubscriberSync<InsertManyResult> subscriber1 = new MongoSubscriberSync<>();
+        /*mongoDatabase.getCollection(COLLECTION_NAME, Author.class)
+                .withCodecRegistry(pojoCodecRegistry)
+                .drop()
+                .subscribe(subscriber);
+        subscriber.await();*/
+        //InsertManyResult result = subscriber1.getFirst();
+        //log.info("initAuthors  result {}", result.getInsertedIds().size());
+        //log.info("BeforeExecution dropDB {}", a.find().first());
     }
 
     @RollbackBeforeExecution
     public void rollbackDB(MongoDatabase database) {
-        log.info("RollbackBeforeExecution dropDB");
-        database.drop();
+        // log.info("RollbackBeforeExecution dropDB");
+
     }
 
-    @Execution()//@ChangeSet(order = "001", id = "initAuthors", author = "ypi", runAlways = true)
-    public void initAuthors(/*ClientSession clientSession,*/ MongoDatabase mongoDatabase, AuthorRepository repository) {
-        log.info("initAuthors " );
-        List<Author> authors = IntStream.range(1, AUTHOR_CNT)
-                 .mapToObj(i -> new Author("Author_" + i))
-                 .collect(Collectors.toList());
-        log.info("initAuthors  {}" ,authors.size());
-        repository.saveAll(authors);
+    @Execution()
+    public void initAuthors(AuthorRepository authorRepository) {
+        log.info("initAuthors ");
 
-        SubscriberSync<InsertManyResult> subscriber = new MongoSubscriberSync<>();
-        mongoDatabase.getCollection( "Authors", Author.class).withDocumentClass(Author.class)
-                .insertMany(/*clientSession,*/authors)
+
+        List<Author> authors = IntStream.range(1, AUTHOR_CNT)
+                .mapToObj(i -> new Author("Author_" + i))
+                .collect(Collectors.toList());
+
+        authorRepository.saveAll(authors).subscribe(author -> {
+            log.info("save author id {}  full name{}", author.getId(), author.getFullName());
+        });
+
+        /*SubscriberSync<InsertManyResult> subscriber = new MongoSubscriberSync<>();
+        CodecRegistry pojoCodecRegistry = CodecRegistries
+                .fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+                        CodecRegistries.fromProviders(PojoCodecProvider
+                                .builder()
+                                .automatic(true)
+                                .build()));
+
+        mongoDatabase.getCollection(COLLECTION_NAME, Author.class)
+                .withCodecRegistry(pojoCodecRegistry)
+                .insertMany(authors)
                 .subscribe(subscriber);
         InsertManyResult result = subscriber.getFirst();
-        log.info("initAuthors  result {}" ,result.getInsertedIds().size());
+        log.info("initAuthors  result {}", result.getInsertedIds().size());*/
 
     }
 
     @RollbackExecution//@ChangeSet(order = "001", id = "initAuthors", author = "ypi", runAlways = true)
-    public void rollbackAuthors(AuthorRepository repository) {
-        repository.findAll().subscribe(repository::delete);
-        //repository.saveAll(authors);
+    public void rollbackAuthors(MongoDatabase mongoDatabase) {
+        SubscriberSync<Void> subscriber = new MongoSubscriberSync<>();
+        MongoCollection<Author> collection = mongoDatabase.getCollection(COLLECTION_NAME, Author.class);
+
+        collection.drop().subscribe(subscriber);
+        subscriber.await();
+        log.info("rollbackAuthors");
     }
 
 

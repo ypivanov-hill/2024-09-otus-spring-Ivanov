@@ -29,13 +29,12 @@ public class BookConverter {
     }
 
     public BookDto bookToDto(Book book) {
-//TODO
-        /*List<GenreDto> genresList = book.getGenres()
-                .flatMap(genre -> new GenreDto(genre.getId(), genre.getName()))
+
+        List<GenreDto> genresList = book.getGenres().stream()
+                .map(genre -> new GenreDto(genre.getId(), genre.getName()))
                 .toList();
         AuthorDto author = new AuthorDto(book.getAuthor().getId(), book.getAuthor().getFullName());
-        return new BookDto(book.getId(), book.getTitle(),author, genresList);*/
-        return null;
+        return new BookDto(book.getId(), book.getTitle(),author, genresList);
     }
 
     public String bookCountByGenreToString(List<BookCountByGenreDto> records) {

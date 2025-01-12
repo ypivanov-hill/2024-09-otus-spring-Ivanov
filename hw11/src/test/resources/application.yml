@@ -4,6 +4,8 @@ spring:
       port: 0
       database: test
       host: localhost
+      write-concern:
+        journal: false
       #port: 27017
       #database: awesomeMongo
 
@@ -20,7 +22,7 @@ de:
   flapdoodle:
     mongodb:
       embedded:
-        version: 4.0.2
+        version: 4.4.0
 
 mongock:
   runner-type: "ApplicationRunner" # default

@@ -2,11 +2,10 @@ package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import ru.otus.hw.converters.GenreConverter;
 import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.repositories.GenreRepository;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -17,10 +16,7 @@ public class GenreServiceImpl implements GenreService {
     private final GenreConverter genreConverter;
 
     @Override
-    public List<GenreDto> findAll() {
-        return null;//genreRepository.findAll()
-                //.stream()
-               // .map(genreConverter::genreToDto)
-                //.toList();
+    public Flux<GenreDto> findAll() {
+        return genreRepository.findAll().map(genreConverter::genreToDto);
     }
 }

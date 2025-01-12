@@ -32,6 +32,7 @@ public class MongogConfig {
 
         driver.setReadConcern(ReadConcern.MAJORITY);
         driver.setReadPreference(ReadPreference.primary());
+
         driver.disableTransaction();
         return driver;
     }

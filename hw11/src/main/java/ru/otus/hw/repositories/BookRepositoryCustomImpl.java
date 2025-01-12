@@ -27,22 +27,21 @@ public class BookRepositoryCustomImpl implements BookRepositoryCustom {
 
     @Override
     public Flux<BookCountByGenreDto> getBookCountByGenre() {
-        Map<String, Long> resultMap = new HashMap<>();
 
         Aggregation aggregation = newAggregation(
                 unwind("genres")
                 , group("genres.name").count().as("count")
                 , sort(Sort.by(Sort.Direction.ASC, "_id"))
         );
-        return mongoTemplate.aggregate(aggregation,Book.class, BookCountByGenreDto.class);
+        return mongoTemplate.aggregate(aggregation, Book.class, BookCountByGenreDto.class);
 
     }
 
     @Override
     public void deleteBookById(String id) {
         Query queryComment = Query.query(Criteria.where("book._id").is(id));
-        mongoTemplate.remove(queryComment, Comment.class);
+        mongoTemplate.remove(queryComment, Comment.class).subscribe();
         Query queryBook = Query.query(Criteria.where("id").is(id));
-        mongoTemplate.remove(queryBook, Book.class);
+        mongoTemplate.remove(queryBook, Book.class).subscribe();
     }
 }

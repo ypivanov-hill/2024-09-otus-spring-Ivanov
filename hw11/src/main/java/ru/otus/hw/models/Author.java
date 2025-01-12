@@ -4,7 +4,6 @@ import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.codecs.pojo.annotations.BsonId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -13,7 +12,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Author {
 
-    //@BsonId
     @Id
     private String id;
 

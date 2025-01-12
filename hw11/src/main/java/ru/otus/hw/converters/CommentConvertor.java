@@ -23,13 +23,13 @@ public class CommentConvertor {
     }
 
     public CommentDto commentToCommentDto(Comment comment) {
-        /*AuthorDto authorDto = new AuthorDto(comment.getBook().getAuthor().getId(),
+        AuthorDto authorDto = new AuthorDto(comment.getBook().getAuthor().getId(),
                 comment.getBook().getAuthor().getFullName());
         BookDto bookDto = new BookDto(comment.getBook().getId(),
                 comment.getBook().getTitle(),
                 authorDto,
                 Collections.emptyList());
-        return new CommentDto(comment.getId(), comment.getText(), bookDto);*/
-        return null;
+        return new CommentDto(comment.getId(), comment.getText(), bookDto);
+        //return null;
     }
 }
