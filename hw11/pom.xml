@@ -25,8 +25,8 @@
             https://raw.githubusercontent.com/OtusTeam/Spring/master/checkstyle.xml
         </checkstyle.config.url>
         <reflections.version>0.10.2</reflections.version>
-        <mongock.version>4.3.8</mongock.version>
-        <flapdoodle.version>4.7.0</flapdoodle.version>
+        <mongock.version>5.5.0</mongock.version>
+        <flapdoodle.version>4.18.0</flapdoodle.version>
     </properties>
 
     <dependencyManagement>
@@ -34,7 +34,7 @@
             <dependency>
                 <groupId>io.mongock</groupId>
                 <artifactId>mongock-bom</artifactId>
-                <version>5.5.0</version>
+                <version>${mongock.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -44,7 +44,18 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>2.6.0</version>
         </dependency>
 
         <!-- MONGOCK RUNNER -->
@@ -65,45 +76,28 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!--dependency>
-            <groupId>com.github.cloudyrock.mongock</groupId>
-            <artifactId>mongock-spring-v5</artifactId>
-            <version>${mongock.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.cloudyrock.mongock</groupId>
-            <artifactId>mongodb-springdata-v3-driver</artifactId>
-            <version>${mongock.version}</version>
-        </dependency-->
-
         <!-- https://mvnrepository.com/artifact/io.mongock/mongodb-reactive-driver -->
         <dependency>
             <groupId>io.mongock</groupId>
             <artifactId>mongodb-reactive-driver</artifactId>
-            <version>5.5.0</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.mongock/mongock-standalone -->
-        <!--dependency>
-            <groupId>io.mongock</groupId>
-            <artifactId>mongock-standalone</artifactId>
-            <version>5.5.0</version>
-        </dependency-->
-
 
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <!--version>${flapdoodle.version}</version-->
-            <version>4.18.0</version>
+            <version>${flapdoodle.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
+            <version>${flapdoodle.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
 
         <dependency>
@@ -112,36 +106,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!--dependency>
-            <groupId>de.flapdoodle.embed</groupId>
-            <artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
-            <version>4.11.0</version>
-            <version>${flapdoodle.version}</version>
-        </dependency-->
-
-        <dependency>
-            <groupId>de.flapdoodle.embed</groupId>
-            <artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
-            <version>4.18.0</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-            <version>2.6.0</version>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -150,7 +119,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-            <!--plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${checkstyle-plugin.version}</version>
@@ -171,7 +140,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin-->
+            </plugin>
         </plugins>
     </build>
 

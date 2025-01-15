@@ -11,10 +11,6 @@ import ru.otus.hw.dto.BookCountByGenreDto;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;

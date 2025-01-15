@@ -1,6 +1,8 @@
 package ru.otus.hw.controllers;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,15 +20,28 @@ import ru.otus.hw.services.BookService;
 import java.time.Duration;
 import java.util.HashSet;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class BookController {
 
     private final BookService bookService;
 
-    @GetMapping("/api/v1/book")
+    @GetMapping(path = "/api/v1/book", produces = MediaType.APPLICATION_NDJSON_VALUE)
     public Flux<BookDto> findAllBooks() {
-        return bookService.findAll();
+        return bookService.findAll().delayElements(Duration.ofSeconds(3)).map(val -> { log.info("valStr:{}}", val.getTitle()); return val;});
+    }
+
+    @GetMapping(path = "/api/v1/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> stream() {
+        log.info("stream");
+        return Flux.generate(() -> 0, (state, emitter) -> {
+                    emitter.next(state);
+                    return state + 1;
+                })
+                .delayElements(Duration.ofSeconds(1L))
+                .map(Object::toString)
+                .map(val -> { log.info("valStr:{}}", val); return String.format("valStr:%s", val);});
     }
 
     @GetMapping("/api/v1/book/{id}")

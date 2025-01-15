@@ -4,8 +4,6 @@ spring:
       port: 0
       database: test
       host: localhost
-      write-concern:
-        journal: false
       #port: 27017
       #database: awesomeMongo
 

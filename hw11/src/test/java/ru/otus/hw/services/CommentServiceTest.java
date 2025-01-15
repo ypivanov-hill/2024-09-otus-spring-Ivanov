@@ -4,35 +4,26 @@ package ru.otus.hw.services;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.ReactiveMongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.otus.hw.converters.AuthorConverter;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import ru.otus.hw.converters.BookConverter;
-import ru.otus.hw.converters.CommentConvertor;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.dto.AuthorDto;
-import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Сервис для комментариев должен")
-@DataMongoTest
-@Import({CommentServiceImpl.class,
-        CommentConvertor.class,
-        BookConverter.class,
-        AuthorConverter.class})
+@SpringBootTest
 @Transactional(propagation = Propagation.NEVER)
 class CommentServiceTest {
 
@@ -44,7 +35,7 @@ class CommentServiceTest {
     private static final String WRONG_BOOK_NAME = "WrongBookTitle";
 
 
-    private static final String FOURTH_COMMENT_TEXT = "BookComment_4";
+    private static final String FIRST_COMMENT_TEXT = "BookComment_1";
 
     private static final String NEW_COMMENT_TEXT = "BookComment_X";
 
@@ -52,23 +43,32 @@ class CommentServiceTest {
     private CommentService commentService;
 
     @Autowired
-    private MongoOperations mongoTemplate;
+    private ReactiveMongoOperations mongoTemplate;
 
     @Autowired
     private BookConverter bookConverter;
 
-    /*@DisplayName("возвращать комментарий и книгу по его id")
+    @DisplayName("возвращать комментарий и книгу по его id")
     @Test
     void shouldFindById() {
-        Query query = new Query(Criteria.where("text").is(FOURTH_COMMENT_TEXT));
-        var expectedComments = mongoTemplate.findOne(query, Comment.class);
+         var expectedComments = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
         assertThat(expectedComments).isNotNull();
 
-        Optional<CommentDto> expectedComment = commentService.findById(expectedComments.getId());
-        assertThat(expectedComment).isNotEmpty().get()
-                .hasFieldOrPropertyWithValue("text", FOURTH_COMMENT_TEXT)
-                .extracting("book")
-                .hasFieldOrPropertyWithValue("title", SECOND_BOOK_NAME);
+        Mono<CommentDto> expectedComment = commentService.findById(expectedComments.getId());
+
+        StepVerifier
+                .create(expectedComment)
+                .assertNext(comment -> {
+                    assertThat(comment)
+                            .isNotNull()
+                            .hasFieldOrPropertyWithValue("text", FIRST_COMMENT_TEXT)
+                            .extracting("book")
+                            .hasFieldOrPropertyWithValue("title", SECOND_BOOK_NAME);
+                        }
+                )
+                .expectComplete()
+                .verify();
+
 
     }
 
@@ -76,13 +76,19 @@ class CommentServiceTest {
     @Test
     void shouldFindAllCommentsByBookId() {
         Query query = new Query(Criteria.where("title").is(SECOND_BOOK_NAME));
-        var expectedBook = mongoTemplate.findOne(query, Book.class);
+        var expectedBook = mongoTemplate.findOne(query, Book.class).block();
         assertThat(expectedBook).isNotNull();
 
-        List<CommentDto> expectedComments = commentService.findByBookId(expectedBook.getId());
-        assertThat(expectedComments).hasSize(FIRST_BOOK_COMMENTS_COUNT)
-                .allMatch(commentDto -> SECOND_BOOK_NAME.equals(commentDto.getBook().getTitle()))
-                .anyMatch(commentDto -> FOURTH_COMMENT_TEXT.equals(commentDto.getText()));
+        Flux<CommentDto> expectedComments = commentService.findByBookId(expectedBook.getId());
+
+        StepVerifier
+                .create(expectedComments)
+                .expectNextCount(FIRST_BOOK_COMMENTS_COUNT)
+                .thenConsumeWhile(commentDto -> SECOND_BOOK_NAME.equals(commentDto.getBook().getTitle()))
+                .expectComplete()
+                .verify();
+
+
     }
 
     @DisplayName("добавлять новые комментарии к книгам")
@@ -90,20 +96,27 @@ class CommentServiceTest {
     void shouldInsertComment() {
 
         Query query = new Query(Criteria.where("title").is(THIRD_BOOK_NAME));
-        var book = mongoTemplate.findOne(query, Book.class);
+        var book = mongoTemplate.findOne(query, Book.class).block();
         assertThat(book).isNotNull();
 
         Query queryComments = new Query(Criteria.where("book._id").is(book.getId()));
-        var comments = mongoTemplate.find(queryComments, Comment.class);
+        var comments = mongoTemplate.find(queryComments, Comment.class).collectList().block();
         assertThat(comments).isNotEmpty();
 
         int beforeCommentCount = comments.size();
 
-        CommentDto commentDto = commentService.insert(NEW_COMMENT_TEXT, bookConverter.bookToDto(book));
-        assertThat(commentDto).isNotNull()
-                .hasFieldOrPropertyWithValue("text", NEW_COMMENT_TEXT);
+        Mono<CommentDto> expectedComment = commentService.insert(NEW_COMMENT_TEXT, bookConverter.bookToDto(book));
+        StepVerifier
+                .create(expectedComment)
+                .assertNext(comment -> {
+                    assertThat(comment).isNotNull()
+                            .hasFieldOrPropertyWithValue("text", NEW_COMMENT_TEXT);
+                        }
+                )
+                .expectComplete()
+                .verify();
 
-        var returnedComments = mongoTemplate.find(queryComments, Comment.class);
+        var returnedComments = mongoTemplate.find(queryComments, Comment.class).collectList().block();
 
 
         assertThat(returnedComments)
@@ -120,13 +133,17 @@ class CommentServiceTest {
 
         var expectedComment = getFirstCommentByBookTitle(THIRD_BOOK_NAME);
 
-        CommentDto returnedComment = commentService.update(expectedComment.getId(),
+        Mono<CommentDto> returnedComment = commentService.update(expectedComment.getId(),
                 NEW_COMMENT_TEXT,
                 bookConverter.bookToDto(expectedComment.getBook()));
-        assertThat(returnedComment).isNotNull();
+        StepVerifier
+                .create(returnedComment)
+                .assertNext(comment ->   assertThat(comment).isNotNull())
+                .expectComplete()
+                .verify();
 
         Query queryComments = new Query(Criteria.where("id").is(expectedComment.getId()));
-        expectedComment = mongoTemplate.findOne(queryComments, Comment.class);
+        expectedComment = mongoTemplate.findOne(queryComments, Comment.class).block();
 
         assertThat(expectedComment)
                 .isNotNull()
@@ -144,7 +161,7 @@ class CommentServiceTest {
         commentService.deleteById(expectedComment.getId());
 
         Query queryComments = new Query(Criteria.where("id").is(expectedComment.getId()));
-        var returnedComment = mongoTemplate.findOne(queryComments, Comment.class);
+        var returnedComment = mongoTemplate.findOne(queryComments, Comment.class).block();
 
         assertThat(returnedComment).isNull();
     }
@@ -152,59 +169,75 @@ class CommentServiceTest {
     @DisplayName("должен отображать автора")
     @Test
     void shouldFindAuthorInBookById() {
-        var comment = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
-        Optional<CommentDto> returnedComment = commentService.findById(comment.getId());
+        var firstCommentByBookTitle = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
 
-        assertThat(returnedComment).isNotEmpty();
+        Mono<CommentDto> returnedComment = commentService.findById(firstCommentByBookTitle.getId());
 
-        assertThat(returnedComment.get().getBook())
-                .isNotNull()
-                .extracting(BookDto::getAuthor)
-                .extracting(AuthorDto::getId)
-                .hasToString(comment.getBook().getAuthor().getId());
+        StepVerifier
+                .create(returnedComment)
+                .assertNext(comment -> {
+                    assertThat(comment).isNotNull();
+
+                    assertThat(comment.getBook())
+                            .isNotNull()
+                            .extracting(BookDto::getAuthor)
+                            .extracting(AuthorDto::getId)
+                            .hasToString(comment.getBook().getAuthor().getId());
+                })
+                .expectComplete()
+                .verify();
     }
 
     @DisplayName("не должен отображать жанры")
     @Test
     void shouldFindNoneGenresInBook() {
-        var comment = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
-        Optional<CommentDto> returnedComment = commentService.findById(comment.getId());
+        var firstCommentByBookTitle = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
 
-        assertThat(returnedComment).isNotEmpty();
+        Mono<CommentDto> returnedComment = commentService.findById(firstCommentByBookTitle.getId());
 
-        assertThat(returnedComment.get())
-                .extracting(CommentDto::getBook)
-                .isNotNull()
-                .extracting(BookDto::getGenres)
-                .isNotNull();
-        assertThat(returnedComment.get().getBook().getGenres())
-                .isEmpty();
+        StepVerifier
+                .create(returnedComment)
+                .assertNext(comment -> {
+                    assertThat(comment).isNotNull();
 
+                    assertThat(comment)
+                            .extracting(CommentDto::getBook)
+                            .isNotNull()
+                            .extracting(BookDto::getGenres)
+                            .isNotNull();
+                    assertThat(comment.getBook().getGenres())
+                            .isEmpty();
+                })
+                .expectComplete()
+                .verify();
     }
 
     @DisplayName("должен выдавать ошибку если книги нет ")
     @Test
     void shouldReturnExceptionWhenBookIsNotFound() {
 
-        var comment = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
+        var firstCommentByBookTitle = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
 
-        var wrongBook = comment.getBook();
+        var wrongBook = firstCommentByBookTitle.getBook();
         wrongBook.setId(WRONG_BOOK_NAME);
         wrongBook.setTitle(WRONG_BOOK_NAME);
+        Mono<CommentDto> commentDtoMono = commentService.update(firstCommentByBookTitle.getId(), NEW_COMMENT_TEXT, bookConverter.bookToDto(wrongBook));
 
-        assertThatThrownBy(() -> { commentService.update(comment.getId(), NEW_COMMENT_TEXT, bookConverter.bookToDto(wrongBook)); })
-                . isInstanceOf(EntityNotFoundException.class);
+        StepVerifier
+                .create(commentDtoMono)
+                .expectError()
+                .verify();
     }
 
     private Comment getFirstCommentByBookTitle(String title) {
         Query query = new Query(Criteria.where("title").is(title));
-        var book = mongoTemplate.findOne(query, Book.class);
+        var book = mongoTemplate.findOne(query, Book.class).block();
         assertThat(book).isNotNull();
 
         Query queryComments = new Query(Criteria.where("book._id").is(book.getId()));
-        var bookComments = mongoTemplate.find(queryComments, Comment.class);
+        var bookComments = mongoTemplate.find(queryComments, Comment.class).collectList().block();
 
         assertThat(bookComments).isNotEmpty();
         return bookComments.get(0);
-    }*/
+    }
 }

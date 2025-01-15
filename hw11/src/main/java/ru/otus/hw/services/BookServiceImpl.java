@@ -65,16 +65,13 @@ public class BookServiceImpl implements BookService {
 
 
     private Mono<BookDto> save(String id, String title,  AuthorDto authorDto, Set<GenreDto> genreDtos) {
-
         if (isEmpty(genreDtos)) {
             throw new IllegalArgumentException("Genres ids must not be null");
         }
-
         Mono<Author> author = authorRepository.findById(authorDto.getId());
         Mono<List<Genre>> genres = genreRepository.findAllById(genreDtos.stream()
                 .map(GenreDto::getId)
                 .collect(Collectors.toSet())).collectList();
-
         Mono<Book> newBook = Mono.zip(author, genres, (author1, genreList) -> new Book(id, title, author1, genreList));
         newBook = newBook.flatMap(book -> {
             commentRepository.findByBookId(book.getId()).subscribe(
@@ -86,9 +83,7 @@ public class BookServiceImpl implements BookService {
                     }
             );
             return bookRepository.save(book);
-
         });
-
         return newBook.map(bookConverter::bookToDto);
     }
 

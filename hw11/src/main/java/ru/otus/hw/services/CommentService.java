@@ -5,9 +5,6 @@ import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
 
-import java.util.List;
-import java.util.Optional;
-
 public interface CommentService {
     Mono<CommentDto> findById(String id);
 

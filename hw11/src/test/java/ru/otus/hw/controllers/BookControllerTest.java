@@ -5,10 +5,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.GenreDto;
@@ -19,23 +22,18 @@ import ru.otus.hw.services.GenreService;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(value = BookController.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = "mongock.enabled=false")
 public class BookControllerTest {
 
     @Autowired
-    private MockMvc mvc;
+    private WebTestClient webTestClient;
 
     @Autowired
     private ObjectMapper mapper;
@@ -62,33 +60,56 @@ public class BookControllerTest {
 
 
 
-    /*@DisplayName("должен возвращать спиcок книг")
+    @DisplayName("должен возвращать спиcок книг")
     @Test
     void shouldReturnStatusOkAndCorrectAllBooksContent() throws Exception {
-        when(bookService.findAll()).thenReturn(books);
-        mvc.perform(get("/api/v1/book"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(books)));
+        Flux<BookDto> booksFlux = Flux
+                .fromIterable(books)
+                .log();
+
+        when(bookService.findAll()).thenReturn(booksFlux);
+
+        var client = webTestClient.mutate().build();
+
+        client
+                .get().uri("/api/v1/book")
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .json(mapper.writeValueAsString(books));
     }
 
     @DisplayName("должен возвращать книгу по ид ")
     @Test
     void shouldReturnStatusOkAndCorrectBookById() throws Exception {
         BookDto expectedBook = books.get(0);
-        when(bookService.findById(expectedBook.getId())).thenReturn(Optional.of(expectedBook));
-        mvc.perform(get("/api/v1/book/{id}", expectedBook.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(expectedBook)));
+        when(bookService.findById(expectedBook.getId())).thenReturn(Mono.just(expectedBook));
+
+        var client = webTestClient.mutate().build();
+
+        client
+                .get().uri("/api/v1/book/{id}", expectedBook.getId())
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .json(mapper.writeValueAsString(expectedBook));
     }
 
 
     @DisplayName("должен отображать ошибку")
     @Test
     void shouldReturnErrorWhenBookNotFound() throws Exception {
-        when(bookService.findById("bookId")).thenThrow(new EntityNotFoundException(""));
-        mvc.perform(get("/api/v1/book/{id}", books.get(0).getId() + "wrong"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string("Entity not found("));
+        when(bookService.findById(books.get(0).getId() + "wrong")).thenReturn(Mono.error(new EntityNotFoundException("")));
+
+        var client = webTestClient.mutate().build();
+
+        client
+                .get().uri("/api/v1/book/{id}", books.get(0).getId() + "wrong")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
     }
 
     @DisplayName("должен изменять книгу")
@@ -96,7 +117,7 @@ public class BookControllerTest {
     void shouldUpdateBookAndReturnNewBook() throws Exception {
         BookDto expectedBook = books.get(0);
         when(bookService.findById(expectedBook.getId()))
-                .thenReturn(Optional.of(expectedBook));
+                .thenReturn(Mono.just(expectedBook));
 
         BookDto newBook = new BookDto(expectedBook.getId(),
                 "New Title",
@@ -107,19 +128,23 @@ public class BookControllerTest {
                 any(String.class),
                 any(AuthorDto.class),
                 any(HashSet.class)))
-                .thenReturn(newBook);
+                .thenReturn(Mono.just(newBook));
 
-        mvc.perform(put("/api/v1/book")
-                        .contentType("application/json")
-                        .content(mapper.writeValueAsString(newBook)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(newBook)));
+        var client = webTestClient.mutate().build();
+
+        client
+                .put().uri("/api/v1/book")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(mapper.writeValueAsString(newBook))
+                .exchange()
+                .expectBody()
+                .json(mapper.writeValueAsString(newBook));
 
         verify(bookService, times(1))
                 .update(any(String.class),
                         any(String.class),
                         any(AuthorDto.class),
                         any(HashSet.class));
-    }*/
+    }
 
 }
