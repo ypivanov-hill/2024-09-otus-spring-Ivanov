@@ -7,7 +7,7 @@ import ru.otus.hw.models.in.Author;
 import ru.otus.hw.models.out.AuthorNew;
 import ru.otus.hw.repositories.AuthorRepository;
 
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,8 +22,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     private final SequenceValueService sequenceValueService;
 
-    private List<Long> reservedIds;
-
+    private ConcurrentLinkedQueue<Long> reservedIds;
 
     @Override
     public AuthorNew getAuthorNew(Author author) {
@@ -31,8 +30,7 @@ public class AuthorServiceImpl implements AuthorService {
         if (reservedIds.isEmpty()) {
             throw new RuntimeException("There is no id to create new rows");
         }
-        Long currentId  = reservedIds.get(0);
-        reservedIds.remove(currentId);
+        Long currentId  = reservedIds.poll();
         log.debug("getAuthorNew remaining count of Ids {}", reservedIds.size());
         log.debug("getAuthorNew set Id {}", currentId);
         mappingService.putAuthorIds(currentId, author.getId());
@@ -41,8 +39,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public void reserveSequenceValues() {
-
-        reservedIds = sequenceValueService.getSequenceValues(authorRepository.count(), SEQUENCE_NAME);
+        reservedIds = sequenceValueService.getSequenceValuesQueue(authorRepository.count(), SEQUENCE_NAME);
         log.debug("Author reservedIds {}", reservedIds.size());
     }
 }

@@ -6,7 +6,7 @@ import ru.otus.hw.models.in.Genre;
 import ru.otus.hw.models.out.GenreNew;
 import ru.otus.hw.repositories.GenreRepository;
 
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @RequiredArgsConstructor
 @Service
@@ -20,15 +20,14 @@ public class GenreServiceImpl implements GenreService {
 
     private final GenreRepository genreRepository;
 
-    private List<Long> reservedIds;
+    private ConcurrentLinkedQueue<Long> reservedIds;
 
     @Override
     public GenreNew getGenreNew(Genre genre) {
         if (reservedIds.isEmpty()) {
             throw new RuntimeException("There is no id to create new rows");
         }
-        Long currentId  = reservedIds.get(0);
-        reservedIds.remove(currentId);
+        Long currentId  = reservedIds.poll();
         mappingService.putGenreIds(currentId, genre.getId());
         return new GenreNew(currentId, genre.getName());
     }
@@ -36,6 +35,6 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public void reserveSequenceValues() {
 
-        reservedIds = sequenceValueService.getSequenceValues(genreRepository.count(), SEQUENCE_NAME);
+        reservedIds = sequenceValueService.getSequenceValuesQueue(genreRepository.count(), SEQUENCE_NAME);
     }
 }

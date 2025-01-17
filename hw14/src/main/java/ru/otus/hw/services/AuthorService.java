@@ -8,4 +8,5 @@ public interface AuthorService {
     AuthorNew getAuthorNew(Author author);
 
     void reserveSequenceValues();
+
 }

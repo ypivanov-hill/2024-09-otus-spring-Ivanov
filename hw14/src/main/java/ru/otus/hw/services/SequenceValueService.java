@@ -1,7 +1,8 @@
 package ru.otus.hw.services;
 
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public interface SequenceValueService {
-    List<Long> getSequenceValues(long count, String sequenceName);
+
+    ConcurrentLinkedQueue<Long> getSequenceValuesQueue(long count, String sequenceName);
 }

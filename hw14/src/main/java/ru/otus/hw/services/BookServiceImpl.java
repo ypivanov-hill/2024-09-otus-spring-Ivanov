@@ -8,7 +8,7 @@ import ru.otus.hw.models.in.Genre;
 import ru.otus.hw.models.out.BookNew;
 import ru.otus.hw.repositories.BookRepository;
 
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,17 +23,16 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
 
-    private List<Long> reservedIds;
+    private ConcurrentLinkedQueue<Long> reservedIds;
 
     @Override
     public BookNew getBookNew(Book book) {
-        log.debug("Book count of Id {}", reservedIds.size());
+        log.debug("Book before count of Id {}", reservedIds.size());
         if (reservedIds.isEmpty()) {
             throw new RuntimeException("There is no id to create new rows");
         }
-        Long currentId  = reservedIds.get(0);
-        reservedIds.remove(currentId);
-        log.debug("Book count of Id {}", reservedIds.size());
+        Long currentId  = reservedIds.poll();
+        log.debug("Book after count of Id {}", reservedIds.size());
         log.debug("Book currentId {}", currentId);
 
         mappingService.putBookIds(currentId, book.getId());
@@ -51,7 +50,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void reserveSequenceValues() {
 
-        reservedIds = sequenceValueService.getSequenceValues(bookRepository.count(), SEQUENCE_NAME);
+        reservedIds = sequenceValueService.getSequenceValuesQueue(bookRepository.count(), SEQUENCE_NAME);
         log.debug("Book count of Id {}", reservedIds.size());
     }
 }
