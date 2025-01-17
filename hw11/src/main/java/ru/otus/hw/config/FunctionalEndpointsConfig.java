@@ -26,8 +26,14 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
 @Configuration
 public class FunctionalEndpointsConfig {
 
-    @RouterOperations({@RouterOperation(method = RequestMethod.GET, path = "/api/v1/author", beanClass = AuthorService.class, beanMethod = "findAll"),
-                @RouterOperation(method = RequestMethod.GET, path = "/api/v1/author/{id}", beanClass = AuthorService.class, beanMethod = "findById",
+    @RouterOperations({@RouterOperation(method = RequestMethod.GET,
+            path = "/api/v1/author",
+            beanClass = AuthorService.class,
+            beanMethod = "findAll"),
+                @RouterOperation(method = RequestMethod.GET,
+                        path = "/api/v1/author/{id}",
+                        beanClass = AuthorService.class,
+                        beanMethod = "findById",
                         operation = @Operation(
                                 description = "findById",
                                 operationId =  "findById",
@@ -40,7 +46,10 @@ public class FunctionalEndpointsConfig {
                                         explode = Explode.FALSE,
                                         required = true
                 ))),
-                @RouterOperation(method = RequestMethod.DELETE, path = "/api/v1/author/{id}", beanClass = AuthorService.class, beanMethod = "deleteById",
+                @RouterOperation(method = RequestMethod.DELETE,
+                        path = "/api/v1/author/{id}",
+                        beanClass = AuthorService.class,
+                        beanMethod = "deleteById",
                         operation = @Operation(
                                 operationId =  "deleteById",
                                 description = "deleteById",

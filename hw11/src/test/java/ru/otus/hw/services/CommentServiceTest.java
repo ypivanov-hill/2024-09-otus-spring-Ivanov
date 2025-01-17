@@ -51,7 +51,7 @@ class CommentServiceTest {
     @DisplayName("возвращать комментарий и книгу по его id")
     @Test
     void shouldFindById() {
-         var expectedComments = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
+         var expectedComments = getFirstComment();
         assertThat(expectedComments).isNotNull();
 
         Mono<CommentDto> expectedComment = commentService.findById(expectedComments.getId());
@@ -61,21 +61,20 @@ class CommentServiceTest {
                 .assertNext(comment -> {
                     assertThat(comment)
                             .isNotNull()
-                            .hasFieldOrPropertyWithValue("text", FIRST_COMMENT_TEXT)
+                            .hasFieldOrPropertyWithValue("text", expectedComments.getText())
                             .extracting("book")
-                            .hasFieldOrPropertyWithValue("title", SECOND_BOOK_NAME);
+                            .hasFieldOrPropertyWithValue("title", expectedComments.getBook().getTitle());
                         }
                 )
                 .expectComplete()
                 .verify();
-
 
     }
 
     @DisplayName("находить все комментарии по id книги")
     @Test
     void shouldFindAllCommentsByBookId() {
-        Query query = new Query(Criteria.where("title").is(SECOND_BOOK_NAME));
+        Query query = new Query(Criteria.where("title").is(FIRST_BOOK_NAME));
         var expectedBook = mongoTemplate.findOne(query, Book.class).block();
         assertThat(expectedBook).isNotNull();
 
@@ -84,7 +83,7 @@ class CommentServiceTest {
         StepVerifier
                 .create(expectedComments)
                 .expectNextCount(FIRST_BOOK_COMMENTS_COUNT)
-                .thenConsumeWhile(commentDto -> SECOND_BOOK_NAME.equals(commentDto.getBook().getTitle()))
+                .thenConsumeWhile(commentDto -> FIRST_BOOK_NAME.equals(commentDto.getBook().getTitle()))
                 .expectComplete()
                 .verify();
 
@@ -95,7 +94,7 @@ class CommentServiceTest {
     @Test
     void shouldInsertComment() {
 
-        Query query = new Query(Criteria.where("title").is(THIRD_BOOK_NAME));
+        Query query = new Query(Criteria.where("title").is(FIRST_BOOK_NAME));
         var book = mongoTemplate.findOne(query, Book.class).block();
         assertThat(book).isNotNull();
 
@@ -123,15 +122,14 @@ class CommentServiceTest {
                 .isNotEmpty()
                 .hasSize(beforeCommentCount + 1)
                 .anyMatch(comment -> NEW_COMMENT_TEXT.equals(comment.getText()))
-                .allMatch(comment -> THIRD_BOOK_NAME.equals(comment.getBook().getTitle()));
+                .allMatch(comment -> FIRST_BOOK_NAME.equals(comment.getBook().getTitle()));
     }
 
     @DisplayName("изменять комментарии")
     @Test
     void shouldUpdateComment() {
 
-
-        var expectedComment = getFirstCommentByBookTitle(THIRD_BOOK_NAME);
+        var expectedComment = getFirstComment();
 
         Mono<CommentDto> returnedComment = commentService.update(expectedComment.getId(),
                 NEW_COMMENT_TEXT,
@@ -150,13 +148,13 @@ class CommentServiceTest {
                 .hasFieldOrPropertyWithValue("text", NEW_COMMENT_TEXT)
                 .extracting(Comment::getBook)
                 .hasFieldOrProperty("title")
-                .isNotEqualTo(FIRST_BOOK_NAME);
+                .isNotEqualTo(expectedComment.getBook().getTitle());
     }
 
     @DisplayName("удалять комментарии по id")
     @Test
     void shouldDeleteCommentById() {
-        var expectedComment = getFirstCommentByBookTitle(THIRD_BOOK_NAME);
+        var expectedComment = getFirstComment();
 
         commentService.deleteById(expectedComment.getId());
 
@@ -169,7 +167,7 @@ class CommentServiceTest {
     @DisplayName("должен отображать автора")
     @Test
     void shouldFindAuthorInBookById() {
-        var firstCommentByBookTitle = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
+        var firstCommentByBookTitle = getFirstComment();
 
         Mono<CommentDto> returnedComment = commentService.findById(firstCommentByBookTitle.getId());
 
@@ -191,7 +189,7 @@ class CommentServiceTest {
     @DisplayName("не должен отображать жанры")
     @Test
     void shouldFindNoneGenresInBook() {
-        var firstCommentByBookTitle = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
+        var firstCommentByBookTitle = getFirstComment();
 
         Mono<CommentDto> returnedComment = commentService.findById(firstCommentByBookTitle.getId());
 
@@ -216,7 +214,7 @@ class CommentServiceTest {
     @Test
     void shouldReturnExceptionWhenBookIsNotFound() {
 
-        var firstCommentByBookTitle = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
+        var firstCommentByBookTitle = getFirstComment();
 
         var wrongBook = firstCommentByBookTitle.getBook();
         wrongBook.setId(WRONG_BOOK_NAME);
@@ -229,9 +227,11 @@ class CommentServiceTest {
                 .verify();
     }
 
-    private Comment getFirstCommentByBookTitle(String title) {
-        Query query = new Query(Criteria.where("title").is(title));
-        var book = mongoTemplate.findOne(query, Book.class).block();
+    private Comment getFirstComment() {
+        var book = mongoTemplate.findOne(new Query(),Book.class).block();
+        System.out.println("getFirstCommentByBookTitle EX " + book.getTitle());
+        /*Query query = new Query(Criteria.where("title").is(title));
+        var book = mongoTemplate.findOne(query, Book.class).block();*/
         assertThat(book).isNotNull();
 
         Query queryComments = new Query(Criteria.where("book._id").is(book.getId()));
