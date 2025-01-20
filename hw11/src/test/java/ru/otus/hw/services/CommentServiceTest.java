@@ -156,7 +156,14 @@ class CommentServiceTest {
     void shouldDeleteCommentById() {
         var expectedComment = getFirstComment();
 
-        commentService.deleteById(expectedComment.getId());
+        var deleteIdMono = commentService.deleteById(expectedComment.getId());
+        StepVerifier
+                .create(deleteIdMono)
+                .assertNext(comment -> {
+                    assertThat(comment).isNotNull().isEqualTo(expectedComment.getId());
+                })
+                .expectComplete()
+                .verify();
 
         Query queryComments = new Query(Criteria.where("id").is(expectedComment.getId()));
         var returnedComment = mongoTemplate.findOne(queryComments, Comment.class).block();

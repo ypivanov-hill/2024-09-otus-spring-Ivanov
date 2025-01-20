@@ -138,7 +138,7 @@ class BookRepositoryTest {
         var comments = mongoTemplate.find(queryComments, Comment.class).collectList().block();
         assertThat(comments).isNotEmpty().hasSize(2);
 
-        bookRepository.deleteBookById(book.getId());
+        bookRepository.deleteBookById(book.getId()).block();
 
         book = mongoTemplate.findOne(query,Book.class).block();
 

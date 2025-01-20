@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
@@ -16,9 +16,7 @@ import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
-import ru.otus.hw.services.AuthorService;
-import ru.otus.hw.services.BookService;
-import ru.otus.hw.services.GenreService;
+import ru.otus.hw.services.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +26,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WebFluxTest
 @TestPropertySource(properties = "mongock.enabled=false")
 public class BookControllerTest {
 
@@ -46,6 +44,9 @@ public class BookControllerTest {
 
     @MockBean
     private GenreService genreService;
+
+    @MockBean
+    private CommentService commentService;
 
     private List<AuthorDto> authors = List.of(new AuthorDto("AuthorId1", "Author 1 FullName"),
             new AuthorDto("AuthorId2", "Author 2 FullName"));

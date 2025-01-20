@@ -1,6 +1,8 @@
 package ru.otus.hw.repositories;
 
+import reactor.core.publisher.Mono;
+
 public interface AuthorRepositoryCustom {
 
-    void deleteAuthorById(String id);
+    Mono<String> deleteAuthorById(String id);
 }

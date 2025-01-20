@@ -11,6 +11,6 @@ public interface AuthorRepository extends ReactiveMongoRepository<Author, String
 
     Mono<Author> findById(String id);
 
-    void deleteAuthorById(String id);
+    Mono<String>  deleteAuthorById(String id);
 
 }

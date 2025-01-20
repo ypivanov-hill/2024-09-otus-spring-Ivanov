@@ -1,7 +1,6 @@
 package ru.otus.hw.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,9 +41,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/api/v1/book/{bookId}/comment/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable String bookId, @PathVariable String id) {
-        commentService.deleteById(id);
-        return ResponseEntity.ok(id);
+    public Mono<String> deleteById(@PathVariable String bookId, @PathVariable String id) {
+        return commentService.deleteById(id);
     }
 
 }

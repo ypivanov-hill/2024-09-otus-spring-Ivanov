@@ -184,7 +184,18 @@ class BookServiceTest {
         var expectedBook = mongoTemplate.findOne(query, Book.class).block();
         assertThat(expectedBook).isNotNull();
 
-        bookService.deleteById(expectedBook.getId());
+        var bookIdMono = bookService.deleteById(expectedBook.getId());
+
+        StepVerifier
+                .create(bookIdMono)
+                .assertNext(book -> {
+                            assertThat(book)
+                                    .isNotNull()
+                                    .isEqualTo(expectedBook.getId());
+                        }
+                )
+                .expectComplete()
+                .verify();
 
         Query queryComments = new Query(Criteria.where("book._id").is(expectedBook.getId()));
         var comments = mongoTemplate.find(queryComments, Comment.class).collectList().block();

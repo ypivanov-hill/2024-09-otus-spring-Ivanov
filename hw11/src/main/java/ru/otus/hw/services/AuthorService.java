@@ -12,5 +12,5 @@ public interface AuthorService {
     @Operation(description = "get one Author by id")
     Mono<AuthorDto> findById(String id);
 
-    void deleteById(String id);
+    Mono<String> deleteById(String id);
 }

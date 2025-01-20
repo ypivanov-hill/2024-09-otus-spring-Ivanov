@@ -1,7 +1,6 @@
 package ru.otus.hw.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,9 +20,8 @@ public class AuthorController {
     }
 
     //@DeleteMapping("/api/v1/author/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable String id) {
-        authorService.deleteById(id);
-        return ResponseEntity.ok(id);
+    public Mono<String> deleteById(@PathVariable String id) {
+        return authorService.deleteById(id);
     }
 
     //@GetMapping("/api/v1/author/{id}")

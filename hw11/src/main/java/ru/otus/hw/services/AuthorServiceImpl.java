@@ -30,8 +30,8 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public void deleteById(String id) {
-        authorRepository.deleteAuthorById(id);
+    public Mono<String> deleteById(String id) {
+        return authorRepository.deleteAuthorById(id);
     }
 
 

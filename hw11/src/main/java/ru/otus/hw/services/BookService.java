@@ -18,7 +18,7 @@ public interface BookService {
 
     Mono<BookDto> update(String id, String title, AuthorDto author, Set<GenreDto> genres);
 
-    void deleteById(String id);
+    Mono<String> deleteById(String id);
 
     Flux<BookCountByGenreDto> getBookCountByGenre();
 }

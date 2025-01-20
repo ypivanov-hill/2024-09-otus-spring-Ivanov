@@ -73,15 +73,15 @@ public class FunctionalEndpointsConfig {
                 .GET("/api/v1/author/{id}",
                         request ->
                                 authorService.findById(request.pathVariable("id"))
-                                        .flatMap(person -> ok().contentType(APPLICATION_JSON).body(fromValue(person)))
+                                        .flatMap(author -> ok().contentType(APPLICATION_JSON).body(fromValue(author)))
                                         .switchIfEmpty(notFound().build())
                 )
                 .DELETE("/api/v1/author/{id}",
-                        request -> {
-                            String id = request.pathVariable("id");
-                            authorService.deleteById(id);
-                            return ok().contentType(MediaType.TEXT_PLAIN).bodyValue(id);
-                        })
+                        request -> authorService.deleteById(request.pathVariable("id"))
+                                    .flatMap(authorId -> ok().contentType(MediaType.TEXT_PLAIN)
+                                            .body(fromValue(authorId)))
+                                    .switchIfEmpty(notFound().build())
+                        )
                 .build();
 
     }

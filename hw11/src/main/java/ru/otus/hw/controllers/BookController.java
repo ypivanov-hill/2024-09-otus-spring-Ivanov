@@ -2,7 +2,6 @@ package ru.otus.hw.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,9 +36,8 @@ public class BookController {
     }
 
     @DeleteMapping("/api/v1/book/{id}")
-    public ResponseEntity<String> deleteBookById(@PathVariable String id) {
-        bookService.deleteById(id);
-        return ResponseEntity.ok(id);
+    public Mono<String> deleteBookById(@PathVariable String id) {
+        return bookService.deleteById(id);
     }
 
     @PostMapping("/api/v1/book")
