@@ -60,9 +60,8 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Mono<String> deleteById(String id) {
-       return bookRepository.deleteBookById(id);
+        return bookRepository.deleteById(id).then(commentRepository.deleteByBookId(id)).thenReturn(id);
     }
-
 
     private Mono<BookDto> save(String id, String title,  AuthorDto authorDto, Set<GenreDto> genreDtos) {
         if (isEmpty(genreDtos)) {
@@ -72,19 +71,9 @@ public class BookServiceImpl implements BookService {
         Mono<List<Genre>> genres = genreRepository.findAllById(genreDtos.stream()
                 .map(GenreDto::getId)
                 .collect(Collectors.toSet())).collectList();
-        Mono<Book> newBook = Mono.zip(author, genres, (author1, genreList) -> new Book(id, title, author1, genreList));
-        newBook = newBook.flatMap(book -> {
-            commentRepository.findByBookId(book.getId()).subscribe(
-                    comment -> {
-                        comment.setBook(book);
-                        commentRepository
-                                .save(comment)
-                                .subscribe();
-                    }
-            );
-            return bookRepository.save(book);
-        });
-        return newBook.map(bookConverter::bookToDto);
+        return Mono.zip(author, genres, (author1, genreList) -> new Book(id, title, author1, genreList))
+                .flatMap(bookRepository::save)
+                .map(bookConverter::bookToDto);
     }
 
     public Flux<BookCountByGenreDto> getBookCountByGenre() {

@@ -126,7 +126,7 @@ class BookRepositoryTest {
                 .verify();
     }
 
-    @DisplayName("должен удалять книгу и комментарии по id ")
+    @DisplayName("должен удалять книгу ")
     @Test
     void shouldDeleteBook() {
 
@@ -134,17 +134,11 @@ class BookRepositoryTest {
         var book = mongoTemplate.findOne(query,Book.class).block();
         assertThat(book).isNotNull();
 
-        Query queryComments = new Query(Criteria.where("book._id").is(book.getId()));
-        var comments = mongoTemplate.find(queryComments, Comment.class).collectList().block();
-        assertThat(comments).isNotEmpty().hasSize(2);
-
-        bookRepository.deleteBookById(book.getId()).block();
+        bookRepository.deleteById(book.getId()).block();
 
         book = mongoTemplate.findOne(query,Book.class).block();
 
         assertThat(book).isNull();
 
-        comments = mongoTemplate.find(queryComments, Comment.class).collectList().block();
-        assertThat(comments).isEmpty();
     }
 }

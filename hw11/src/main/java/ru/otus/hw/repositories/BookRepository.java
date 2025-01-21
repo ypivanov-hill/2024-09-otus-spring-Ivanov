@@ -15,4 +15,5 @@ public interface BookRepository extends ReactiveMongoRepository<Book, String>, B
 
     Flux<BookCountByGenreDto> getBookCountByGenre();
 
+    Mono<Void> deleteBooksByAuthorId(String id);
 }
