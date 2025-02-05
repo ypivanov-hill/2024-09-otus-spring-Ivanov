@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Comments</title>
+    <style type="text/css">
+        body {
+            padding: 50px;
+        }
+
+        .add-form {
+            padding: 50px;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+        }
+
+        input:read-only {
+            background: none;
+              border: none;
+              padding: 2px;
+              width: 200px;
+        }
+
+        .comments {
+            border: 1px solid steelblue;
+            width: 300px;
+            border-collapse: collapse;
+        }
+
+        .comments tr td, th {
+            padding: 5px;
+            border: 1px solid steelblue;
+        }
+
+        .comments td:last-child, td:first-child {
+            width: 50px;
+        }
+    </style>
+</head>
+</head>
+<body>
+<ul>
+    <li><a th:href="@{/}">Books</a></li>
+    <li><a th:href="@{/comment(bookId=${book.id})}">Comment List</a></li>
+</ul>
+
+<div>
+    <form id="add-form" action="#" th:method="post" th:action="@{/comment/new(bookId=${book.id})}">
+        <label for="new-comment-text-input">New comment:</label>
+        <input id="new-comment-text-input" name="new-text" type="text" th:value="${newtext}"/>
+        <button type="submit">Add</button>
+    </form>
+</div>
+
+</body>
+</html>
