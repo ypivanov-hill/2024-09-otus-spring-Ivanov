@@ -1,7 +1,6 @@
 package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,8 +34,7 @@ public class BookServiceImpl implements BookService {
     private final AclServiceWrapperService aclServiceWrapperService;
 
     @Transactional(readOnly = true)
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
-    @PreAuthorize("canRead(#id, T(ru.otus.hw.dto.BookDto))")
+    @PreAuthorize("canRead(#id, T(ru.otus.hw.models.Book))")
     @Override
     public Optional<BookDto> findById(long id) {
         Optional<Book>  book = bookRepository.findById(id);
@@ -44,7 +42,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Transactional(readOnly = true)
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public List<BookCompliteDto> findAll() {
         List<Book>  books = bookRepository.findAll();
@@ -52,7 +50,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @PreAuthorize("canWrite(#id, T(ru.otus.hw.dto.BookDto))")
+    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Book))")
     public void save(Long id, BookDto bookDto) {
         if (id == null || id == 0) {
             insert(bookDto.getTitle(), bookDto.getAuthorId(), new HashSet<>(bookDto.getGenreIds()));
@@ -62,26 +60,25 @@ public class BookServiceImpl implements BookService {
     }
 
     @Transactional
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public BookDto insert(String title, long authorId, Set<Long> genresIds) {
-        BookDto returnedBook = save(0, title, authorId, genresIds);
-        aclServiceWrapperService.createAllPermission(returnedBook);
-        return returnedBook;
+
+        return save(0, title, authorId, genresIds);
     }
 
     @Transactional
-    @PreAuthorize("canWrite(#id, T(ru.otus.hw.dto.BookDto))")
+    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Book))")
     @Override
     public BookDto update(long id, String title, long authorId, Set<Long> genresIds) {
         return save(id, title, authorId, genresIds);
     }
 
     @Transactional
-    @PreAuthorize("canDelete(#id, T(ru.otus.hw.dto.BookDto))")
+    @PreAuthorize("canDelete(#id, T(ru.otus.hw.models.Book))")
     @Override
     public void deleteById(long id) {
-        aclServiceWrapperService.deletePermission("ru.otus.hw.dto.BookDto", id);
+        aclServiceWrapperService.deletePermission("ru.otus.hw.models.Book", id);
         bookRepository.deleteById(id);
     }
 
@@ -99,6 +96,10 @@ public class BookServiceImpl implements BookService {
         }
 
         var book = new Book(id, title, author, genres);
-        return bookConverter.bookToDto(bookRepository.save(book));
+        book = bookRepository.save(book);
+        if (id == 0) {
+            aclServiceWrapperService.createAllPermission(book);
+        }
+        return bookConverter.bookToDto(book);
     }
 }

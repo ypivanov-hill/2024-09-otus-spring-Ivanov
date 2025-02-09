@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 @DisplayName("Сервис для комментариев должен")
 @DataJpaTest
 @Import({CommentServiceImpl.class,
+        CommentServiceSecuredImpl.class,
         CommentConvertor.class})
 @Transactional(propagation = Propagation.NEVER)
 class CommentServiceTest {

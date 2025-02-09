@@ -38,5 +38,5 @@ public class User {
     @EqualsAndHashCode.Exclude
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
-    private List<UserRoles> roles;
+    private List<UserRole> roles;
 }

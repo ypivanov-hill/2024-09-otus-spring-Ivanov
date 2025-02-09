@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.otus.hw.converters.CommentConvertor;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
+import ru.otus.hw.models.Comment;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
@@ -30,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(value = CommentController.class)
+@Import(CommentConvertor.class)
 @TestPropertySource(properties = "mongock.enabled=false")
 public class CommentControllerTest {
 
@@ -51,6 +55,7 @@ public class CommentControllerTest {
 
     private List<CommentDto> comments = List.of(new CommentDto(1L, "Comment 1", book),
             new CommentDto(2L, "Comment 2", book));
+
 
     @DisplayName("должен отображать спиcок список комментариев")
     @Test

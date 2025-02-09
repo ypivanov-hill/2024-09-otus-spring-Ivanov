@@ -1,7 +1,6 @@
 package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +22,8 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
 
+    private final CommentServiceSecured commentServiceSecured;
+
     private final CommentConvertor  commentConvertor;
 
     private final BookRepository bookRepository;
@@ -36,12 +37,9 @@ public class CommentServiceImpl implements CommentService {
         return comment.map(commentConvertor::commentToCommentDto);
     }
 
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
-    @PostFilter("hasPermission(filterObject, 'READ')")
-    @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     public List<CommentDto> findByBookId(long bookId) {
-        List<Comment> comments = commentRepository.findByBookId(bookId);
+        List<Comment> comments = commentServiceSecured.findByBookIdSecured(bookId);
         return comments
                 .stream()
                 .map(commentConvertor::commentToCommentDto)
@@ -49,31 +47,29 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Transactional
-    @PreAuthorize("hasAnyRole('USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public CommentDto insert(String text, long bookId) {
-        CommentDto comment = save(0, text, bookId);
-        aclServiceWrapperService.createAllPermission(comment);
-        return comment;
+        return save(0, text, bookId);
     }
 
     @Transactional
-    @PreAuthorize("canWrite(#id, T(ru.otus.hw.dto.CommentDto))")
+    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Comment))")
     @Override
     public CommentDto update(long id, String text, long bookId) {
         return save(id, text, bookId);
     }
 
     @Transactional
-    @PreAuthorize("canDelete(#id, T(ru.otus.hw.dto.CommentDto))")
+    @PreAuthorize("canDelete(#id, T(ru.otus.hw.models.Comment))")
     @Override
     public void deleteById(long id) {
-        aclServiceWrapperService.deletePermission("ru.otus.hw.dto.CommentDto", id);
+        aclServiceWrapperService.deletePermission("ru.otus.hw.models.Comment", id);
         commentRepository.deleteById(id);
     }
 
     @Transactional
-    @PreAuthorize("canWrite(#id, T(ru.otus.hw.dto.CommentDto))")
+    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Comment))")
     @Override
     public void updateOrDelete(long id, String text, long bookId) {
         if (text == null || text.isEmpty()) {
@@ -87,6 +83,10 @@ public class CommentServiceImpl implements CommentService {
         var book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(bookId)));
         var comment = new Comment(id, title, book);
-        return commentConvertor.commentToCommentDto(commentRepository.save(comment));
+        comment = commentRepository.save(comment);
+        if (id == 0) {
+            aclServiceWrapperService.createAllPermission(comment);
+        }
+        return commentConvertor.commentToCommentDto(comment);
     }
 }

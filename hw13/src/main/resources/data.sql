@@ -33,10 +33,10 @@ INSERT INTO acl_sid (id, principal, sid) VALUES
 (5, 0, 'ROLE_ADMIN');
 
 INSERT INTO acl_class (id, class) VALUES
-(1, 'ru.otus.hw.dto.CommentDto'),
-(2, 'ru.otus.hw.dto.BookDto'),
-(3, 'ru.otus.hw.dto.AuthorDto'),
-(4, 'ru.otus.hw.dto.GenreDto');
+(1, 'ru.otus.hw.models.Comment'),
+(2, 'ru.otus.hw.models.Book'),
+(3, 'ru.otus.hw.models.Author'),
+(4, 'ru.otus.hw.models.Genre');
 
 INSERT INTO acl_object_identity (object_id_class, object_id_identity, parent_object, owner_sid, entries_inheriting) VALUES
 ( 1, 1, NULL, 3, 0),
@@ -99,7 +99,7 @@ SELECT  aoi.id acl_object_identity,
 CROSS JOIN ACL_SID asd
 JOIN ACL_OBJECT_IDENTITY aoi  on aoi.OBJECT_ID_CLASS  = acs.ID
 where asd.sid in ('ROLE_USER')
- and acs.class != 'ru.otus.hw.dto.CommentDto'
+ and acs.class != 'ru.otus.hw.models.Comment'
 order by acs.id, asd.id;
 
 --Добавить права user для комментариев
@@ -115,6 +115,6 @@ CROSS JOIN ACL_SID asd
 CROSS JOIN (select 1 acc_level from dual union select 2 acc_level from dual union select 8 acc_level from dual  ) asd
 JOIN ACL_OBJECT_IDENTITY aoi  on aoi.OBJECT_ID_CLASS  = acs.ID
 where asd.sid in ('user')
- and acs.class = 'ru.otus.hw.dto.CommentDto'
+ and acs.class = 'ru.otus.hw.models.Comment'
 order by acs.id, asd.id;
 

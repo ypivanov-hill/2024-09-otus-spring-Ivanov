@@ -19,7 +19,7 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        for (UserRoles role : user.getRoles()) {
+        for (UserRole role : user.getRoles()) {
             Assert.isTrue(!role.getRole().startsWith("ROLE_"), () -> {
                 return role + " cannot start with ROLE_ (it is automatically added)";
             });

@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import ru.otus.hw.models.User;
-import ru.otus.hw.models.UserRoles;
+import ru.otus.hw.models.UserRole;
 import ru.otus.hw.security.AclConfig;
 import ru.otus.hw.security.SecurityConfiguration;
 import ru.otus.hw.services.AclServiceWrapperServiceImpl;
@@ -75,6 +75,7 @@ public class CommentControllerSecurityTest {
                     if(commentCount != null) {
                         if(r.getModelAndView().getModel().get("comments") != null &&
                                 ((List<?>)r.getModelAndView().getModel().get("comments")).size() != commentCount) {
+                            System.out.println("((List<?>)r.getModelAndView().getModel().get(\"comments\")).size() " + ((List<?>)r.getModelAndView().getModel().get("comments")).size());
                             fail("Количество комментариев не совпадает");
                         }
                     }})
@@ -89,9 +90,17 @@ public class CommentControllerSecurityTest {
 
     @MethodSource("getTestArguments")
     public static Stream<Arguments> getTestArguments() {
-        User user = new User(1, "user", "password", List.of(new UserRoles(1, 1, "USER")));
-        User admin = new User(2, "admin", "password", List.of(new UserRoles(2, 2, "ADMIN")));
-        User guest = new User(3, "guest", "password", List.of(new UserRoles(3, 3, "USER")));
+        User user = new User(1, "user", "password", null);
+        UserRole userRole =  new UserRole(1, user, "USER");
+        user.setRoles(List.of(userRole));
+
+        User admin = new User(1, "admin", "password", null);
+        UserRole adminRole =  new UserRole(2, user, "ADMIN");
+        admin.setRoles(List.of(adminRole));
+
+        User guest = new User(3, "guest", "password", null);
+        UserRole guestRole =  new UserRole(3, user, "USER");
+        guest.setRoles(List.of(guestRole));
 
         return Stream.of(
                 Arguments.of(HttpMethod.GET, "/comment", admin, status().isOk(), Map.of("bookId", "3"), 1, true),
