@@ -5,8 +5,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,11 +15,21 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import ru.otus.hw.converters.AuthorConverter;
+import ru.otus.hw.converters.BookConverter;
+import ru.otus.hw.converters.CommentConvertor;
+import ru.otus.hw.converters.GenreConverter;
 import ru.otus.hw.models.User;
 import ru.otus.hw.models.UserRole;
 import ru.otus.hw.security.AclConfig;
+import ru.otus.hw.security.AclMethodSecurityConfiguration;
 import ru.otus.hw.security.SecurityConfiguration;
 import ru.otus.hw.services.AclServiceWrapperServiceImpl;
+import ru.otus.hw.services.AuthorServiceImpl;
+import ru.otus.hw.services.BookServiceImpl;
+import ru.otus.hw.services.CommentServiceImpl;
+import ru.otus.hw.services.CommentServiceSecuredImpl;
+import ru.otus.hw.services.GenreServiceImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -35,11 +45,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DisplayName("Контролер для книг")
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest
+@AutoConfigureDataJpa
 @Import({SecurityConfiguration.class,
         AclConfig.class,
-        AclServiceWrapperServiceImpl.class
+        AclServiceWrapperServiceImpl.class,
+        BookServiceImpl.class,
+        BookConverter.class,
+        AuthorConverter.class,
+        AuthorServiceImpl.class,
+        GenreServiceImpl.class,
+        GenreConverter.class,
+        CommentServiceImpl.class,
+        CommentServiceSecuredImpl.class,
+        CommentConvertor.class,
+        AclMethodSecurityConfiguration.class
 })
 public class BookControllerSecurityTest {
 
@@ -113,9 +133,9 @@ public class BookControllerSecurityTest {
 
                 Arguments.of(HttpMethod.GET, "/login", user, status().isOk(), true, null, Map.of(), List.of().toArray()),
                 Arguments.of(HttpMethod.GET, "/", user, status().isOk(), true, LOGIN_URL, Map.of(), List.of().toArray()),
-                Arguments.of(HttpMethod.DELETE, "/deleteBookById/{id}", user, status().isOk(), false, LOGIN_URL, Map.of(), List.of(1).toArray()),
-                Arguments.of(HttpMethod.POST, "/edit", user, status().isOk(), true, LOGIN_URL, paramMap, List.of().toArray()),
-                Arguments.of(HttpMethod.GET, "/edit/{id}", user, status().isOk(), false, LOGIN_URL, Map.of(), List.of(1).toArray()),
+                Arguments.of(HttpMethod.DELETE, "/deleteBookById/{id}", user, status().isOk(), false, LOGIN_URL, Map.of(), List.of(2).toArray()),
+                Arguments.of(HttpMethod.POST, "/edit", user, status().isOk(), false, LOGIN_URL, paramMap, List.of().toArray()),
+                Arguments.of(HttpMethod.GET, "/edit/{id}", user, status().isOk(), true, LOGIN_URL, Map.of(), List.of(1).toArray()),
                 Arguments.of(HttpMethod.GET, "/create", user, status().isOk(), true, LOGIN_URL, Map.of(), List.of().toArray())
 
         );

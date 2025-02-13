@@ -34,7 +34,7 @@ public class BookServiceImpl implements BookService {
     private final AclServiceWrapperService aclServiceWrapperService;
 
     @Transactional(readOnly = true)
-    @PreAuthorize("canRead(#id, T(ru.otus.hw.models.Book))")
+    @PreAuthorize("canRead(#id, T(ru.otus.hw.models.Book)) and hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public Optional<BookDto> findById(long id) {
         Optional<Book>  book = bookRepository.findById(id);
@@ -50,7 +50,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Book))")
+    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Book)) and hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     public void save(Long id, BookDto bookDto) {
         if (id == null || id == 0) {
             insert(bookDto.getTitle(), bookDto.getAuthorId(), new HashSet<>(bookDto.getGenreIds()));
@@ -68,14 +68,14 @@ public class BookServiceImpl implements BookService {
     }
 
     @Transactional
-    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Book))")
+    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Book)) and hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public BookDto update(long id, String title, long authorId, Set<Long> genresIds) {
         return save(id, title, authorId, genresIds);
     }
 
     @Transactional
-    @PreAuthorize("canDelete(#id, T(ru.otus.hw.models.Book))")
+    @PreAuthorize("canDelete(#id, T(ru.otus.hw.models.Book))  and hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public void deleteById(long id) {
         aclServiceWrapperService.deletePermission("ru.otus.hw.models.Book", id);

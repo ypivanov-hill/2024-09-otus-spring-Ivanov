@@ -2,6 +2,7 @@ package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PostFilter;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.models.Comment;
@@ -17,6 +18,7 @@ public class CommentServiceSecuredImpl implements CommentServiceSecured {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @PostFilter("hasPermission(filterObject, 'READ')")
     public List<Comment> findByBookIdSecured(long bookId) {
         return commentRepository.findByBookId(bookId);

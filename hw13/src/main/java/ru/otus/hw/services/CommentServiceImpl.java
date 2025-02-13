@@ -31,6 +31,7 @@ public class CommentServiceImpl implements CommentService {
     private final AclServiceWrapperService aclServiceWrapperService;
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public Optional<CommentDto> findById(long id) {
         Optional<Comment> comment = commentRepository.findById(id);
@@ -54,14 +55,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Transactional
-    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Comment))")
+    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Comment)) and hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public CommentDto update(long id, String text, long bookId) {
         return save(id, text, bookId);
     }
 
     @Transactional
-    @PreAuthorize("canDelete(#id, T(ru.otus.hw.models.Comment))")
+    @PreAuthorize("canDelete(#id, T(ru.otus.hw.models.Comment)) and hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public void deleteById(long id) {
         aclServiceWrapperService.deletePermission("ru.otus.hw.models.Comment", id);
@@ -69,7 +70,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Transactional
-    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Comment))")
+    @PreAuthorize("canWrite(#id, T(ru.otus.hw.models.Comment)) and hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Override
     public void updateOrDelete(long id, String text, long bookId) {
         if (text == null || text.isEmpty()) {
