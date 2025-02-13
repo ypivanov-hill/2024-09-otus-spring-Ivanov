@@ -85,4 +85,9 @@ public class BookServiceImpl implements BookService {
                                         .toList()))
                 .toList();
     }
+
+    @Override
+    public boolean existsByTitle(String title) {
+        return bookRepository.existsByTitle(title);
+    }
 }

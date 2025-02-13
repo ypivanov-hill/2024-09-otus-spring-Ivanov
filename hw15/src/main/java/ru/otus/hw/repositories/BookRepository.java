@@ -15,5 +15,6 @@ public interface BookRepository extends MongoRepository<Book, String> {
     List<Book> findAll();
 
     Optional<Book> findByTitle(String id);
-    
+
+    boolean existsByTitle(String title);
 }

@@ -1,6 +1,7 @@
 package ru.otus.hw.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +12,6 @@ import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.scheduling.PollerMetadata;
 import ru.otus.hw.models.in.Book;
 import ru.otus.hw.models.in.BookNew;
-import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.services.BookService;
 
 import java.util.List;
@@ -26,12 +26,12 @@ public class IntegrationConfig {
     @Value("${poller.maxMessagesPerPoll}")
     private int maxMessagesPerPoll;
 
-    @Bean
+    @Bean(name = "newBooksChannel")
     public MessageChannelSpec<?, ?> newBooksChannel() {
         return MessageChannels.direct("newBooksChannel");
     }
 
-    @Bean
+    @Bean(name = "newBooksManualChannel")
     public MessageChannelSpec<?, ?> newBooksManualChannel() {
         return MessageChannels.direct("newBooksManualChannel");
     }
@@ -42,9 +42,10 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public IntegrationFlow readFlow(BookService bookService) {
+    public IntegrationFlow readFlow(BookService bookService,
+                                    @Qualifier("newBooksChannel") MessageChannelSpec<?, ?> newBooksChannel) {
         return IntegrationFlow
-                .from("newBooksChannel")
+                .from(newBooksChannel)
                 .split()
                 .<BookNew, Book>transform(bookService::getBook)
                 .aggregate()
@@ -54,12 +55,16 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public IntegrationFlow manualReadFlow(BookRepository bookRepository) {
+    public IntegrationFlow manualReadFlow(BookService bookService,
+                                          @Qualifier("newBooksManualChannel")
+                                              MessageChannelSpec<?, ?> newBooksManualChannel,
+                                          @Qualifier("newBooksChannel")
+                                              MessageChannelSpec<?, ?> newBooksChannel) {
         return IntegrationFlow
-                .from("newBooksManualChannel")
-                .<BookNew>filter(f -> bookRepository.findByTitle(f.getTitle()).isEmpty())
+                .from(newBooksManualChannel)
+                .<BookNew>filter(f -> !bookService.existsByTitle(f.getTitle()))
                 .<BookNew, List<BookNew>>transform(List::of)
-                .channel("newBooksChannel")
+                .channel(newBooksChannel)
                 .get();
     }
 

@@ -13,4 +13,6 @@ public interface BookService {
     void insertBookNew(Message<?> message);
 
     List<BookNew> addNewBooks(int count);
+
+    boolean existsByTitle(String title);
 }
