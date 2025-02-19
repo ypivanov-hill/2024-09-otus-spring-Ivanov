@@ -16,21 +16,24 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include:
+          - prometheus
+          - health
+          - logfile
   endpoint:
     health:
+      enabled: true
       show-details: always
+    prometheus:
+      enabled: true
   metrics:
-  #  export:
-  #    prometheus:
-  #      enabled: true
     prometheus:
       metrics:
         export:
           enabled: true
   health:
     defaults:
-      enabled: true
+      enabled: false
 springdoc:
   api-docs:
     enabled: true
