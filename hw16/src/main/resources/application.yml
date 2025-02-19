@@ -1,0 +1,70 @@
+spring:
+  data:
+    rest:
+      basePath: /datarest
+    mongodb:
+      host: localhost
+      port: 27017
+      database: hw08Mongo
+
+    properties:
+      hibernate:
+        format_sql: true
+
+    show-sql: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - prometheus
+          - health
+          - logfile
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    prometheus:
+      metrics:
+        export:
+          enabled: true
+  health:
+    defaults:
+      enabled: false
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    operationsSorter: method
+mongock:
+  runner-type: "InitializingBean"
+  change-logs-scan-package:
+    - ru.otus.hw.changelogs
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+#  lock:
+#    timeout: 30s
+#    retry:
+#      enabled: true
+#      max-retries: 10
+#      backoff:
+#        enabled: true
+#        initial-backoff: 1s
+#        max-backoff: 10s
+#        multiplier: 2
+logging:
+  file:
+    name: ./logs/AppLogFile.log
+  level:
+    root: INFO
+  pattern:
+    console: '%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n'
+    file: '%d %p %c{1.} [%t] %m%n'
+#    com.github.cloudyrock.mongock: DEBUG
+#    org.springframework.data.mongodb.core: DEBUG
