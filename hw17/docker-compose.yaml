@@ -1,0 +1,19 @@
+services:
+  hw17-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "hw17-app-img:0.0.1"
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_HOST=mongodb
+      - SPRING_DATA_MONGODB_PORT=27017
+      - SPRING_DATA_MONGODB_DATABASE=hw08Mongo
+  mongodb:
+    image: "mongodb/mongodb-community-server:6.0-ubi8"
+    ports:
+      - "27017:27017"
+   # environment:
+   #   - MONGODB_INITDB_ROOT_USERNAME=user
+   #   - MONGODB_INITDB_ROOT_PASSWORD=
