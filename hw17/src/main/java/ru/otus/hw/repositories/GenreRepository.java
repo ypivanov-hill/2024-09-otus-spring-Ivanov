@@ -10,7 +10,7 @@ import java.util.Set;
 public interface GenreRepository extends MongoRepository<Genre, String> {
     List<Genre> findAll();
 
-    List<Genre> findAllByNameIn(Set<String> ids);
+    List<Genre> findAllByIdIn(Set<String> ids);
 
     Optional<Genre> findFirstByName(String name);
 }
