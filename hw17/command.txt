@@ -1,0 +1,13 @@
+docker pull bellsoft/liberica-openjdk-alpine-musl:17.0.13
+
+docker pull maven:3.8.5-openjdk-17
+
+docker build -t hw17-docker-image:0.0.1 .
+
+docker kill hw17-docker-app
+
+docker start -i hw17-docker-app
+
+docker run -it  --name hw17-docker-app -d -p 8080:8080 hw17-docker-image:0.0.1
+
+docker compose up -d
