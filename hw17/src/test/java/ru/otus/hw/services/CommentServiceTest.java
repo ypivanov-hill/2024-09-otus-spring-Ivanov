@@ -4,55 +4,62 @@ package ru.otus.hw.services;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.TestPropertySource;
 import ru.otus.hw.converters.AuthorConverter;
 import ru.otus.hw.converters.BookConverter;
 import ru.otus.hw.converters.CommentConvertor;
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
-import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
+import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
+import ru.otus.hw.models.Genre;
+import ru.otus.hw.repositories.BookRepository;
+import ru.otus.hw.repositories.CommentRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Сервис для комментариев должен")
-@DataMongoTest
-@Import({CommentServiceImpl.class,
-        CommentConvertor.class,
+@WebMvcTest(value = CommentServiceImpl.class)
+@Import({CommentConvertor.class,
         BookConverter.class,
         AuthorConverter.class})
-@Transactional(propagation = Propagation.NEVER)
+@TestPropertySource(properties = "mongock.enabled=false")
 class CommentServiceTest {
-
-    private static final int FIRST_BOOK_COMMENTS_COUNT = 2;
-
-    private static final String FIRST_BOOK_NAME = "BookTitle_1";
-    private static final String SECOND_BOOK_NAME = "BookTitle_2";
-    private static final String THIRD_BOOK_NAME = "BookTitle_3";
-    private static final String WRONG_BOOK_NAME = "WrongBookTitle";
-
-
-    private static final String FOURTH_COMMENT_TEXT = "BookComment_4";
 
     private static final String NEW_COMMENT_TEXT = "BookComment_X";
 
-    @Autowired
-    private CommentService commentService;
+    private Author author = new Author("1", "Author 1 FullName");
+    private List<Genre> genres = List.of(new Genre("1", "Genre1"),
+            new Genre("2", "Genre2"),
+            new Genre("3", "Genre3"),
+            new Genre("4", "Genre4"));
+
+    private Book book = new Book("1", "TestBook1", author, List.of(genres.get(0), genres.get(1)));
+
+    private List<Comment> comments = List.of(new Comment("1", "Comment 1", book),
+            new Comment("2", "Comment 2", book));
+
+    @MockBean
+    private CommentRepository commentRepository;
+
+    @MockBean
+    private BookRepository bookRepository;
 
     @Autowired
-    private MongoOperations mongoTemplate;
+    private CommentService commentService;
 
     @Autowired
     private BookConverter bookConverter;
@@ -60,57 +67,49 @@ class CommentServiceTest {
     @DisplayName("возвращать комментарий и книгу по его id")
     @Test
     void shouldFindById() {
-        Query query = new Query(Criteria.where("text").is(FOURTH_COMMENT_TEXT));
-        var expectedComments = mongoTemplate.findOne(query, Comment.class);
-        assertThat(expectedComments).isNotNull();
+        var expectedComment = comments.get(0);
+        when(commentRepository.findById(expectedComment.getId())).thenReturn(Optional.of(expectedComment));
 
-        Optional<CommentDto> expectedComment = commentService.findById(expectedComments.getId());
-        assertThat(expectedComment).isNotEmpty().get()
-                .hasFieldOrPropertyWithValue("text", FOURTH_COMMENT_TEXT)
+        Optional<CommentDto> returnedComment = commentService.findById(expectedComment.getId());
+
+        assertThat(returnedComment).isNotEmpty().get()
+                .hasFieldOrPropertyWithValue("text", expectedComment.getText())
                 .extracting("book")
-                .hasFieldOrPropertyWithValue("title", SECOND_BOOK_NAME);
+                .hasFieldOrPropertyWithValue("title", expectedComment.getBook().getTitle());
 
     }
 
     @DisplayName("находить все комментарии по id книги")
     @Test
     void shouldFindAllCommentsByBookId() {
-        Query query = new Query(Criteria.where("title").is(SECOND_BOOK_NAME));
-        var expectedBook = mongoTemplate.findOne(query, Book.class);
-        assertThat(expectedBook).isNotNull();
+        when(commentRepository.findByBookId(book.getId())).thenReturn(comments);
 
-        List<CommentDto> expectedComments = commentService.findByBookId(expectedBook.getId());
-        assertThat(expectedComments).hasSize(FIRST_BOOK_COMMENTS_COUNT)
-                .allMatch(commentDto -> SECOND_BOOK_NAME.equals(commentDto.getBook().getTitle()))
-                .anyMatch(commentDto -> FOURTH_COMMENT_TEXT.equals(commentDto.getText()));
+        List<CommentDto> expectedComments = commentService.findByBookId(book.getId());
+        assertThat(expectedComments).hasSize(comments.size())
+                .allMatch(commentDto -> book.getTitle().equals(commentDto.getBook().getTitle()))
+                .anyMatch(commentDto -> comments.get(0).getText().equals(commentDto.getText()));
     }
 
     @DisplayName("добавлять новые комментарии к книгам")
     @Test
     void shouldInsertComment() {
 
-        Query query = new Query(Criteria.where("title").is(THIRD_BOOK_NAME));
-        var book = mongoTemplate.findOne(query, Book.class);
-        assertThat(book).isNotNull();
+        when(bookRepository.findById(book.getId()))
+                .thenReturn(Optional.of(book));
 
-        Query queryComments = new Query(Criteria.where("book._id").is(book.getId()));
-        var comments = mongoTemplate.find(queryComments, Comment.class);
-        assertThat(comments).isNotEmpty();
 
-        int beforeCommentCount = comments.size();
+        Comment firstComment = comments.get(0);
+
+        Comment newComment = firstComment;
+        newComment.setId(null);
+        newComment.setText(NEW_COMMENT_TEXT);
+
+        when(commentRepository.save(newComment))
+                .thenReturn((firstComment));
 
         CommentDto commentDto = commentService.insert(NEW_COMMENT_TEXT, bookConverter.bookToDto(book));
         assertThat(commentDto).isNotNull()
                 .hasFieldOrPropertyWithValue("text", NEW_COMMENT_TEXT);
-
-        var returnedComments = mongoTemplate.find(queryComments, Comment.class);
-
-
-        assertThat(returnedComments)
-                .isNotEmpty()
-                .hasSize(beforeCommentCount + 1)
-                .anyMatch(comment -> NEW_COMMENT_TEXT.equals(comment.getText()))
-                .allMatch(comment -> THIRD_BOOK_NAME.equals(comment.getBook().getTitle()));
     }
 
     @DisplayName("изменять комментарии")
@@ -118,56 +117,66 @@ class CommentServiceTest {
     void shouldUpdateComment() {
 
 
-        var expectedComment = getFirstCommentByBookTitle(THIRD_BOOK_NAME);
+        when(bookRepository.findById(book.getId()))
+                .thenReturn(Optional.of(book));
+
+
+        Comment expectedComment = comments.get(0);
+
+        Comment newComment = expectedComment;
+
+        newComment.setText(NEW_COMMENT_TEXT);
+
+        when(commentRepository.findById(newComment.getId()))
+                .thenReturn(Optional.of(expectedComment));
+
+        when(commentRepository.save(newComment))
+                .thenReturn((newComment));
 
         CommentDto returnedComment = commentService.update(expectedComment.getId(),
                 NEW_COMMENT_TEXT,
                 bookConverter.bookToDto(expectedComment.getBook()));
         assertThat(returnedComment).isNotNull();
 
-        Query queryComments = new Query(Criteria.where("id").is(expectedComment.getId()));
-        expectedComment = mongoTemplate.findOne(queryComments, Comment.class);
 
-        assertThat(expectedComment)
+        assertThat(returnedComment)
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("text", NEW_COMMENT_TEXT)
-                .extracting(Comment::getBook)
+                .extracting(CommentDto::getBook)
                 .hasFieldOrProperty("title")
-                .isNotEqualTo(FIRST_BOOK_NAME);
+                .isNotEqualTo(book.getTitle());
     }
 
     @DisplayName("удалять комментарии по id")
     @Test
     void shouldDeleteCommentById() {
-        var expectedComment = getFirstCommentByBookTitle(THIRD_BOOK_NAME);
+        var expectedComment = comments.get(0);
 
         commentService.deleteById(expectedComment.getId());
 
-        Query queryComments = new Query(Criteria.where("id").is(expectedComment.getId()));
-        var returnedComment = mongoTemplate.findOne(queryComments, Comment.class);
-
-        assertThat(returnedComment).isNull();
+        verify(commentRepository, times(1)).deleteById(expectedComment.getId());
     }
 
     @DisplayName("должен отображать автора")
     @Test
     void shouldFindAuthorInBookById() {
-        var comment = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
+        var comment = comments.get(0);
+
+        when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
         Optional<CommentDto> returnedComment = commentService.findById(comment.getId());
 
         assertThat(returnedComment).isNotEmpty();
 
-        assertThat(returnedComment.get().getBook())
-                .isNotNull()
-                .extracting(BookDto::getAuthor)
+        assertThat(returnedComment.get().getBook()).isNotNull().extracting(BookDto::getAuthor)
                 .extracting(AuthorDto::getId)
-                .hasToString(comment.getBook().getAuthor().getId());
+                .isEqualTo(comment.getBook().getAuthor().getId());
     }
 
     @DisplayName("не должен отображать жанры")
     @Test
     void shouldFindNoneGenresInBook() {
-        var comment = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
+        var comment = comments.get(0);
+        when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
         Optional<CommentDto> returnedComment = commentService.findById(comment.getId());
 
         assertThat(returnedComment).isNotEmpty();
@@ -186,25 +195,12 @@ class CommentServiceTest {
     @Test
     void shouldReturnExceptionWhenBookIsNotFound() {
 
-        var comment = getFirstCommentByBookTitle(SECOND_BOOK_NAME);
-
-        var wrongBook = comment.getBook();
-        wrongBook.setId(WRONG_BOOK_NAME);
-        wrongBook.setTitle(WRONG_BOOK_NAME);
-
-        assertThatThrownBy(() -> { commentService.update(comment.getId(), NEW_COMMENT_TEXT, bookConverter.bookToDto(wrongBook)); })
-                . isInstanceOf(EntityNotFoundException.class);
-    }
-
-    private Comment getFirstCommentByBookTitle(String title) {
-        Query query = new Query(Criteria.where("title").is(title));
-        var book = mongoTemplate.findOne(query, Book.class);
-        assertThat(book).isNotNull();
-
-        Query queryComments = new Query(Criteria.where("book._id").is(book.getId()));
-        var bookComments = mongoTemplate.find(queryComments, Comment.class);
-
-        assertThat(bookComments).isNotEmpty();
-        return bookComments.get(0);
+        var comment = comments.get(0);
+        var wrongBook = book;
+        wrongBook.setId("-1");
+        assertThatThrownBy(() -> {
+            commentService.update(comment.getId(), NEW_COMMENT_TEXT, bookConverter.bookToDto(wrongBook));
+        })
+                .isInstanceOf(EntityNotFoundException.class);
     }
 }
