@@ -19,6 +19,6 @@ FROM bellsoft/liberica-openjdk-alpine-musl:17.0.13
 LABEL version="0.0.1"
 LABEL description="hw17 Docker image"
 
-COPY --from=builder /opt/app/build/target/hw17-docker-0.0.1-SNAPSHOT.jar /app/app.jar
+COPY --from=builder /opt/app/build/target/*.jar /app/app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
