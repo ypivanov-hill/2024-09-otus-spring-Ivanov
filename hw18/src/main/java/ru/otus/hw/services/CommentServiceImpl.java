@@ -2,6 +2,7 @@ package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.otus.hw.aspect.RateLimitedAndCircuitBreaker;
 import ru.otus.hw.converters.CommentConvertor;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
@@ -25,6 +26,7 @@ public class CommentServiceImpl implements CommentService {
     private final BookRepository bookRepository;
 
     @Override
+    @RateLimitedAndCircuitBreaker(rateLimiterName = "bookRateLimiter", circuitBreakerName = "bookCircuitBreaker")
     public Optional<CommentDto> findById(String id) {
         Optional<Comment> comment = commentRepository.findById(id);
         return comment.map(commentConvertor::commentToCommentDto);

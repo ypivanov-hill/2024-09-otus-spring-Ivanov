@@ -1,11 +1,9 @@
 package ru.otus.hw.services;
 
-import io.github.resilience4j.core.functions.CheckedSupplier;
-import io.github.resilience4j.ratelimiter.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.stereotype.Service;
+import ru.otus.hw.aspect.RateLimitedAndCircuitBreaker;
 import ru.otus.hw.converters.BookConverter;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookCountByGenreDto;
@@ -17,7 +15,6 @@ import ru.otus.hw.repositories.AuthorRepository;
 import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -37,17 +34,14 @@ public class BookServiceImpl implements BookService {
 
     private final BookConverter bookConverter;
 
-    private final CircuitBreaker circuitBreaker;
-
-    private final RateLimiter rateLimiter;
-
     @Override
+    @RateLimitedAndCircuitBreaker(rateLimiterName = "bookRateLimiter", circuitBreakerName = "bookCircuitBreaker")
     public Optional<BookDto> findById(String id) {
         Optional<Book>  book = bookRepository.findById(id);
         return book.map(bookConverter::bookToDto);
     }
 
-    @Override
+    /*@Override
     public List<BookDto> findAll() {
         log.info("findAll start");
         CheckedSupplier<List<Book>> restrictedSupplier = RateLimiter.decorateCheckedSupplier(rateLimiter, () ->
@@ -66,7 +60,16 @@ public class BookServiceImpl implements BookService {
         return books.stream()
                 .map(bookConverter::bookToDto)
                 .toList();
-    }
+    }*/
+
+    @RateLimitedAndCircuitBreaker(rateLimiterName = "bookRateLimiter", circuitBreakerName = "bookCircuitBreaker")
+    @Override
+    public List<BookDto> findAll() {
+        log.info("findAll start");
+       return bookRepository.findAll().stream()
+               .map(bookConverter::bookToDto)
+                .toList();
+}
 
     @Override
     public BookDto insert(String title, AuthorDto author, Set<GenreDto> genres) {
