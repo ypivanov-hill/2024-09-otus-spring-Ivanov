@@ -3,7 +3,10 @@ package ru.otus.hw.config;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.ratelimiter.internal.InMemoryRateLimiterRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
@@ -17,6 +20,9 @@ import java.time.Duration;
 @Configuration
 public class Resilience4jConfig {
 
+    @Autowired
+    private RateLimiterRegistry inMemoryRateLimiterRegistry;
+
     @Bean
     public RateLimiterConfig rateLimiterConfig() {
         return RateLimiterConfig.custom()
@@ -26,9 +32,11 @@ public class Resilience4jConfig {
                 .build();
     }
 
-    @Bean
+    @Bean(name = "defaultRateLimiterX")
     public RateLimiter rateLimiter(RateLimiterConfig config) {
-        return RateLimiter.of("defaultRateLimiter", config);
+        RateLimiter rateLimiter = RateLimiter.of("defaultRateLimiterX", config);
+        inMemoryRateLimiterRegistry.replace("defaultRateLimiterX", rateLimiter);
+        return rateLimiter;
     }
 
     @Bean
@@ -41,7 +49,7 @@ public class Resilience4jConfig {
                 .build());
     }
 
-    @Bean
+    @Bean(name = "defaultCircuitBreaker")
     public CircuitBreaker circuitBreaker(CircuitBreakerFactory<?, ?> circuitBreakerFactory) {
         return circuitBreakerFactory.create("defaultCircuitBreaker");
     }

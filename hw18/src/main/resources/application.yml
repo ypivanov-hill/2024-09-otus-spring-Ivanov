@@ -24,6 +24,21 @@ mongock:
     write-concern:
       journal: false
     read-concern: local
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 100
+        permittedNumberOfCallsInHalfOpenState: 10
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+  ratelimiter:
+    configs:
+      default:
+        limitForPeriod: 1
+        timeoutDuration: 15s
 #  lock:
 #    timeout: 30s
 #    retry:

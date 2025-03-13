@@ -14,6 +14,8 @@ import ru.otus.hw.models.Book;
 import ru.otus.hw.repositories.AuthorRepository;
 import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.GenreRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +37,8 @@ public class BookServiceImpl implements BookService {
     private final BookConverter bookConverter;
 
     @Override
-    @RateLimitedAndCircuitBreaker(rateLimiterName = "bookRateLimiter", circuitBreakerName = "bookCircuitBreaker")
+    @CircuitBreaker(name = "defaultCircuitBreaker")
+    @RateLimiter(name = "defaultRateLimiterX")
     public Optional<BookDto> findById(String id) {
         Optional<Book>  book = bookRepository.findById(id);
         return book.map(bookConverter::bookToDto);
@@ -61,8 +64,9 @@ public class BookServiceImpl implements BookService {
                 .map(bookConverter::bookToDto)
                 .toList();
     }*/
-
-    @RateLimitedAndCircuitBreaker(rateLimiterName = "bookRateLimiter", circuitBreakerName = "bookCircuitBreaker")
+    //@CircuitBreaker(name = "defaultCircuitBreaker")
+    //@RateLimiter(name = "defaultRateLimiter")
+    @RateLimitedAndCircuitBreaker(rateLimiterName = "defaultRateLimiter", circuitBreakerName = "defaultCircuitBreaker")
     @Override
     public List<BookDto> findAll() {
         log.info("findAll start");
