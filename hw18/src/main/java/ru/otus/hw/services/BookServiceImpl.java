@@ -3,7 +3,6 @@ package ru.otus.hw.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.otus.hw.aspect.RateLimitedAndCircuitBreaker;
 import ru.otus.hw.converters.BookConverter;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookCountByGenreDto;
@@ -38,7 +37,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @CircuitBreaker(name = "defaultCircuitBreaker")
-    @RateLimiter(name = "defaultRateLimiterX")
+    @RateLimiter(name = "defaultRateLimiter")
     public Optional<BookDto> findById(String id) {
         Optional<Book>  book = bookRepository.findById(id);
         return book.map(bookConverter::bookToDto);
@@ -64,9 +63,9 @@ public class BookServiceImpl implements BookService {
                 .map(bookConverter::bookToDto)
                 .toList();
     }*/
-    //@CircuitBreaker(name = "defaultCircuitBreaker")
-    //@RateLimiter(name = "defaultRateLimiter")
-    @RateLimitedAndCircuitBreaker(rateLimiterName = "defaultRateLimiter", circuitBreakerName = "defaultCircuitBreaker")
+
+    @CircuitBreaker(name = "defaultCircuitBreaker")
+    @RateLimiter(name = "defaultRateLimiter")
     @Override
     public List<BookDto> findAll() {
         log.info("findAll start");

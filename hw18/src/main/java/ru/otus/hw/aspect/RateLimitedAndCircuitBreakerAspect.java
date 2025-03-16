@@ -6,17 +6,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Optional;
 
-@Aspect
-@Component
+//@Aspect
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class RateLimitedAndCircuitBreakerAspect {

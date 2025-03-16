@@ -4,7 +4,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.otus.hw.aspect.RateLimitedAndCircuitBreaker;
 import ru.otus.hw.converters.CommentConvertor;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentDto;
@@ -30,7 +29,6 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @CircuitBreaker(name = "defaultCircuitBreaker")
     @RateLimiter(name = "defaultRateLimiter")
-    //@RateLimitedAndCircuitBreaker(rateLimiterName = "bookRateLimiter", circuitBreakerName = "bookCircuitBreaker")
     public Optional<CommentDto> findById(String id) {
         Optional<Comment> comment = commentRepository.findById(id);
         return comment.map(commentConvertor::commentToCommentDto);

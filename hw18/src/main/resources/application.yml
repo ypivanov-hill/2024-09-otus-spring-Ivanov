@@ -29,26 +29,24 @@ resilience4j:
   circuitbreaker:
     configs:
       default:
-        registerHealthIndicator: true
         slidingWindowSize: 100
         permittedNumberOfCallsInHalfOpenState: 10
-        waitDurationInOpenState: 10s
+        slowCallDurationThreshold: 4s
+        slowCallRateThreshold: 90
         failureRateThreshold: 50
-  ratelimiter:
-    configs:
-      default:
-        limitForPeriod: 1
-        timeoutDuration: 15s
-#  lock:
-#    timeout: 30s
-#    retry:
-#      enabled: true
-#      max-retries: 10
-#      backoff:
-#        enabled: true
-#        initial-backoff: 1s
-#        max-backoff: 10s
-#        multiplier: 2
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 10
+    instances:
+      defaultCircuitBreaker:
+        baseConfig: default
+        waitDurationInOpenState: 20s
+resilience4j.rateLimiter:
+  configs:
+    default:
+      timeoutDuration: 3s
+      limitForPeriod: 5
+      limit-refresh-period: 25s
+
 #logging:
 #  level:
 #    com.github.cloudyrock.mongock: DEBUG
