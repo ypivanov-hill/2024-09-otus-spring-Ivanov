@@ -1,0 +1,53 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: hw08Mongo
+
+    properties:
+      hibernate:
+        format_sql: true
+
+    show-sql: true
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    operationsSorter: method
+mongock:
+  runner-type: "InitializingBean"
+  change-logs-scan-package:
+    - ru.otus.hw.changelogs
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 100
+        permittedNumberOfCallsInHalfOpenState: 10
+        slowCallDurationThreshold: 4s
+        slowCallRateThreshold: 90
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 10
+    instances:
+      defaultCircuitBreaker:
+        baseConfig: default
+        waitDurationInOpenState: 20s
+resilience4j.rateLimiter:
+  configs:
+    default:
+      timeoutDuration: 3s
+      limitForPeriod: 5
+      limit-refresh-period: 25s
+
+#logging:
+#  level:
+#    com.github.cloudyrock.mongock: DEBUG
+#    org.springframework.data.mongodb.core: DEBUG
